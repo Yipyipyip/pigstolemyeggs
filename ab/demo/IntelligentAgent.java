@@ -226,7 +226,7 @@ public class IntelligentAgent implements Runnable {
                             double gradient = 2*x/(scale*v*v)-1;//1 - (2 * x) / (v * v);
                             // calculate resulting y is you tap now
                             int dist = _tpt.x-x;
-                            int decline = (dist*dist)/1000;
+                            int decline = (dist*dist)/10000;
                             double calcY = y + dist * gradient + decline;
                             // set tap time if calculated y is lower than the target's y
                             if (calcY > _tpt.y) {

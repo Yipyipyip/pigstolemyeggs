@@ -26,10 +26,10 @@ public static void main(String args[])
 						NaiveAgent na = new  NaiveAgent();
 						na.run();
 					}
-                    else if (args.length == 1 && command.equalsIgnoreCase("-ma"))
+                    else if (args.length == 1 && command.equalsIgnoreCase("-ia"))
                     {
-                        IntelligentAgent ma = new IntelligentAgent();
-                        ma.run();
+                        IntelligentAgent ia = new IntelligentAgent();
+                        ia.run();
                     }
                     else
 						if (args.length == 1 && command.equalsIgnoreCase("-nasc"))
