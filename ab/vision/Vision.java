@@ -1113,4 +1113,39 @@ public class Vision {
 		_boxes = VisionUtils.findBoundingBoxes(_segments);
 	}
 
+    private String findActiveBird(List<Rectangle>birds,String color)
+    {
+        Rectangle slingshot=findSlingshot();
+        for(Rectangle i:birds)
+        {
+            if(i.getBounds().intersects(slingshot))
+            {
+                return color;
+            }
+        }
+        return "";
+    }
+
+    public String findActiveBird()
+    {
+        if(findActiveBird(findRedBirds(),"red")!="")
+        {
+            return "red";
+        }else if (findActiveBird(findYellowBirds(),"yellow")!="")
+        {
+            return "yellow";
+        }else if (findActiveBird(findBlueBirds(),"blue")!="")
+        {
+            return "blue";
+        }
+        else if (findActiveBird(findWhiteBirds(),"white")!="")
+        {
+            return "white";
+        }else if (findActiveBird(findBlackBirds(),"black")!="")
+        {
+            return "black";
+        }
+        return "";
+    }
+
 }

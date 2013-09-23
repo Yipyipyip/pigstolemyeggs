@@ -163,7 +163,12 @@ public class IntelligentAgent implements Runnable {
                     Rectangle pig = pigs.get(index);
                     Point _tpt = new Point((int) pig.getCenterX(),
                             (int) pig.getCenterY());
-                    _tpt.x *= 0.95;                 // TODO: only for yellow birds!! 0.9 good?
+                    boolean yellow = false;
+                    if (vision.findActiveBird() == "yellow") {
+                        // shoot shorter if the yellow bird is active
+                        _tpt.x *= 0.95;                 // TODO: 0.95 good? Better: dependent on the release angle
+                        yellow = true;
+                    }
 
                     System.out.println("the target point is " + _tpt);
 
@@ -205,8 +210,8 @@ public class IntelligentAgent implements Runnable {
                             .containsKey(currentLevel)) ? Env.getFocuslist()
                             .get(currentLevel).getY() : refPoint.y);
                     System.out.println("the release point is: " + releasePoint);
-					/*
-					 * =========== Get the release point from the trajectory
+                    /*
+                     * =========== Get the release point from the trajectory
 					 * prediction module====
 					 */
                     System.out.println("Shoot!!");
@@ -218,23 +223,33 @@ public class IntelligentAgent implements Runnable {
 
                         int tap_time = 0;
                         int xStep = 1;
-                        for (int x = focus_x; x < _tpt.x; x += xStep) {
-                            int y = tp.getYCoordinate(sling, releasePoint, x);
-                            double v = tp.getVelocity(releaseAngle);
-                            // derivation of the trajectory function
-                            int scale = sling.height + sling.width;
-                            double gradient = 2*x/(scale*v*v)-1;//1 - (2 * x) / (v * v);
-                            // calculate resulting y is you tap now
-                            int dist = _tpt.x-x;
-                            int decline = (dist*dist)/10000;
-                            double calcY = y + dist * gradient + decline;
-                            // set tap time if calculated y is lower than the target's y
-                            if (calcY > _tpt.y) {
-                                tap_time = (tap_time + tp.getTapTime(sling, releasePoint, new Point(x, y))) / 2;
-                                break;
-                            } else {
-                                tap_time = tp.getTapTime(sling, releasePoint, new Point(x, y));
+                        // calculate tap time for the yellow bird
+                        if (yellow) {
+                            for (int x = focus_x; x < _tpt.x; x += xStep) {
+                                int y = tp.getYCoordinate(sling, releasePoint, x);
+                                double v = tp.getVelocity(releaseAngle);
+                                // derivation of the trajectory function
+                                int scale = sling.height + sling.width;
+                                double gradient = 2 * x / (scale * v * v) - 1;//1 - (2 * x) / (v * v);
+                                // calculate resulting y is you tap now
+                                int dist = _tpt.x - x;
+                                int decline = (dist * dist) / 10000;
+                                double calcY = y + dist * gradient + decline;
+                                // set tap time if calculated y is lower than the target's y
+                                if (calcY > _tpt.y) {
+                                    tap_time = (tap_time + tp.getTapTime(sling, releasePoint, new Point(x, y))) / 2;
+                                    break;
+                                } else {
+                                    tap_time = tp.getTapTime(sling, releasePoint, new Point(x, y));
+                                }
                             }
+                        } else {
+                            int base = 0;
+                            if (releaseAngle > Math.PI / 4)
+                                base = 1400;
+                            else
+                                base = 550;
+                            tap_time = (int) (base + Math.random() * 1500);
                         }
                         shots.add(new Shot(focus_x, focus_y, (int) releasePoint
                                 .getX() - focus_x, (int) releasePoint.getY()
@@ -260,7 +275,6 @@ public class IntelligentAgent implements Runnable {
                             List<Point> traj = vision.findTrajPoints();
                             tp.adjustTrajectory(traj, sling, releasePoint);
                             firstShot = false;
-
                         }
                     } else
                         System.out
