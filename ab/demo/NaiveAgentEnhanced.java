@@ -9,12 +9,17 @@
  *****************************************************************************/
 package ab.demo;
 
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import javax.imageio.ImageIO;
 
 import ab.demo.other.ActionRobot;
 import ab.demo.other.Env;
@@ -24,21 +29,24 @@ import ab.planner.TrajectoryPlanner;
 import ab.vision.GameStateExtractor.GameState;
 import ab.vision.Vision;
 
-public class NaiveAgent extends Agent {
+public class NaiveAgentEnhanced extends Agent {
 
 	private int focus_x;
 	private int focus_y;
 
 	private ActionRobot ar;
 	public int currentLevel = 1;
+	public int points=0;
+	private boolean lsUp=true;
 	TrajectoryPlanner tp;
 
 	private boolean firstShot;
 	private Point prevTarget;
 
 	// a standalone implementation of the Naive Agent
-	public NaiveAgent() {
+	public NaiveAgentEnhanced() {
 		ar = new ActionRobot();
+	
 		tp = new TrajectoryPlanner();
 		prevTarget = null;
 		firstShot = true;
@@ -116,7 +124,30 @@ public class NaiveAgent extends Agent {
 				.sqrt((double) ((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y)
 						* (p1.y - p2.y)));
 	}
-
+	public List<Rectangle> aimForBigPigs(List<Rectangle> pigs)
+	{
+		List<Rectangle> bigPigs=new ArrayList<Rectangle>();
+		int r=0;
+		int size=0;
+		for(int i=0;i<pigs.size();i++)
+		{
+			int helpS=pigs.get(i).width*pigs.get(i).height;
+			if(helpS>size)
+			{
+				size=helpS;
+				r=i;
+			}
+		}
+		for(int i=0;i<pigs.size();i++)
+		{
+			int helpS=pigs.get(i).width*pigs.get(i).height;
+			if(helpS>size-2)
+			{
+				bigPigs.add(pigs.get(i));
+			}
+		}
+		return bigPigs;
+	}
 	public GameState solve()
 
 	{
@@ -153,16 +184,19 @@ public class NaiveAgent extends Agent {
 		if (sling != null) {
 			ar.fullyZoom();
 			if (!pigs.isEmpty()) {
-
+				
 				// Initialise a shot list
 				ArrayList<Shot> shots = new ArrayList<Shot>();
 				Point releasePoint;
 				{
+
+					//Rectangle pig = pigs.get(index);
+					List<Rectangle> bigPigs =aimForBigPigs(pigs);
 					// random pick up a pig
 					Random r = new Random();
 
-					int index = r.nextInt(pigs.size());
-					Rectangle pig = pigs.get(index);
+					int index = r.nextInt(bigPigs.size());
+					Rectangle pig=bigPigs.get(index);
 					Point _tpt = new Point((int) pig.getCenterX(),
 							(int) pig.getCenterY());
 
@@ -188,14 +222,34 @@ public class NaiveAgent extends Agent {
 						releasePoint = pts.get(1);
 					} else if (pts.size() == 1)
 						releasePoint = pts.get(0);
+					else if (ar.current_score==points)
+					{
+						if(lsUp)
+						{
+							releasePoint = pts.get(0);
+							lsUp=false;
+						}
+						else
+						{
+							releasePoint = pts.get(1);
+							lsUp=true;
+						}
+					}
 					else {
 						// System.out.println("first shot " + firstShot);
 						// randomly choose between the trajectories, with a 1 in
 						// 6 chance of choosing the high one
 						if (r.nextInt(6) == 0)
+						{
 							releasePoint = pts.get(1);
+							lsUp=true;
+						}
 						else
+						{
 							releasePoint = pts.get(0);
+							lsUp=false;
+						}
+						
 					}
 					Point refPoint = tp.getReferencePoint(sling);
 					/* Get the center of the active bird */
@@ -224,10 +278,12 @@ public class NaiveAgent extends Agent {
 						int tap_time = (int) (base + Math.random() * 1500);
 						
 						
-						
+						points=ar.current_score;
 						shots.add(new Shot(focus_x, focus_y, (int) releasePoint
 								.getX() - focus_x, (int) releasePoint.getY()
 								- focus_y, 0, tap_time));
+					
+						System.out.println("Current Score: "+points);
 					} else
 						System.err.println("Out of Knowledge");
 				}
@@ -249,6 +305,7 @@ public class NaiveAgent extends Agent {
 							tp.adjustTrajectory(traj, sling, releasePoint);
 							firstShot = false;
 							
+							
 						}
 					} else
 						System.out
@@ -263,7 +320,7 @@ public class NaiveAgent extends Agent {
 
 	public static void main(String args[]) {
 
-		NaiveAgent na = new NaiveAgent();
+		NaiveAgentEnhanced na = new NaiveAgentEnhanced();
 		if (args.length > 0)
 			na.currentLevel = Integer.parseInt(args[0]);
 		na.run();
@@ -273,7 +330,7 @@ public class NaiveAgent extends Agent {
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
-		return "-na";
+		return "-nae";
 	}
 
 	@Override
