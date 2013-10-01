@@ -35,6 +35,10 @@ public class MainEntry {
 				{
 					a=new ClientNaiveAgent();
 				}
+				else if((command.equalsIgnoreCase("-ia")))
+				{
+					a=new IntelligentAgent();
+				}
 				else if (command.equalsIgnoreCase("-showTraj")) {
 					 String[] param = {};
 					 // TestTrajectory.main(param);
