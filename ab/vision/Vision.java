@@ -10,6 +10,7 @@
 
 package ab.vision;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
@@ -34,9 +35,11 @@ public class Vision {
 	private int _colours[]; // colour for each segment
 	private Rectangle _boxes[]; // bounding box for each segment
 	private int _regionThreshold = 10; // minimal pixels in a region
+	private BufferedImage screenshot;
 
 	// create a vision object for processing a given screenshot
 	public Vision(BufferedImage screenshot) {
+		this.screenshot=screenshot;
 		processScreenShot(screenshot);
 	}
 
@@ -1112,40 +1115,170 @@ public class Vision {
 		// find bounding boxes and segment colours
 		_boxes = VisionUtils.findBoundingBoxes(_segments);
 	}
+	public List<Rectangle> getHitableIce()
+	{
+		return getHitableObjects(findWood());
+	}
+	public List<Rectangle> getHitableWood()
+	{
+		return getHitableObjects(findIce());
+	}
+	public List<Rectangle> getHitableStone()
+	{
+		return getHitableObjects(findStones());
+	}
+	
+	private List<Rectangle> getHitable(List<Rectangle>objects1,List<Rectangle> objects2)
+	{
+		List<Rectangle> hitable=new ArrayList<Rectangle>();
+		for(Rectangle o1:objects1)
+		{
+			boolean addLeft=true;
+			boolean addHigh=true;
+			for(Rectangle o2:objects2)
+			{
+				if(o2!=o1)
+				{
+				if(!isObjectMoreLeft(o1, o2))
+				{
+					addLeft=false;
+				}
+				if(!isObjectHigher(o1, o2))
+				{
+					addHigh=false;
+				}
+				}
+			}
+			if(addLeft==true||addHigh==true)
+			{
+			hitable.add(o1);
+			}
+			}
+		return hitable;
+	}
+	private List<Rectangle> getHitableObjects(List<Rectangle> objects)
+	{
+		List<Rectangle> wood=findWood();
+		List<Rectangle> ice=findIce();
+		List<Rectangle> stone=findStones();
+		List<Rectangle> surfaceObjects1=getHitable(objects, wood);
+		List<Rectangle> surfaceObjects2=getHitable(surfaceObjects1, stone);
+		surfaceObjects1=new ArrayList<Rectangle>();
+		surfaceObjects1=getHitable(surfaceObjects2,ice);
+		return surfaceObjects1;
+	}
 
-    private String findActiveBird(List<Rectangle>birds,String color)
-    {
-        Rectangle slingshot=findSlingshot();
-        for(Rectangle i:birds)
-        {
-            if(i.getBounds().intersects(slingshot))
-            {
-                return color;
-            }
-        }
-        return "";
-    }
-
-    public String findActiveBird()
-    {
-        if(findActiveBird(findRedBirds(),"red")!="")
-        {
-            return "red";
-        }else if (findActiveBird(findYellowBirds(),"yellow")!="")
-        {
-            return "yellow";
-        }else if (findActiveBird(findBlueBirds(),"blue")!="")
-        {
-            return "blue";
-        }
-        else if (findActiveBird(findWhiteBirds(),"white")!="")
-        {
-            return "white";
-        }else if (findActiveBird(findBlackBirds(),"black")!="")
-        {
-            return "black";
-        }
-        return "";
-    }
-
+	public boolean isObjectMoreLeft(Rectangle o1, Rectangle o2)
+	{
+		if(o1.getX()>o2.getX())
+		{
+			if(o2.getY()<o1.getY())
+			{
+				if(o2.getY()+o2.getHeight()<(o1.getY()+o1.getHeight()))
+				{
+					return false;
+				}
+			}
+			else if(o2.getY()<(o1.getY()+o1.getHeight()))
+			{
+				if ((o2.getY()+o2.getHeight())>(o1.getY()+o1.getHeight()))
+				{
+					return false;
+				}
+			}
+			else if(o2.getY()==o1.getY())
+			{
+			return false;
+			}
+		}
+		return true;
+	}
+	public boolean isObjectHigher(Rectangle o1, Rectangle o2)
+	{
+		if(o1.getY()>o2.getY())
+		{
+			if(o2.getX()<o1.getX())
+			{
+				if(o2.getX()+o2.getWidth()<(o1.getX()+o1.getWidth()))
+				{
+					return false;
+				}
+			}
+			else if(o2.getX()<(o1.getX()+o1.getWidth()))
+			{
+				if ((o2.getX()+o2.getWidth())>(o1.getX()+o1.getWidth()))
+				{
+					return false;
+				}
+			}
+			else if(o2.getX()==o1.getX())
+			{
+			return false;
+			}
+		}
+		return true;
+	}
+	private String findActiveBird(List<Rectangle>birds,String color)
+	{
+		Rectangle slingshot=findSlingshot();
+		for(Rectangle i:birds)
+		{
+			if(i.getBounds().intersects(slingshot))
+			{
+				return color;
+			}
+		}
+		return "";
+	}
+	public String findActiveBird()
+	{
+		if(findActiveBird(findRedBirds(),"red")!="")
+		{
+			return "red";
+		}else if (findActiveBird(findYellowBirds(),"yellow")!="")
+		{
+			return "yellow";
+		}else if (findActiveBird(findBlueBirds(),"blue")!="")
+		{
+			return "blue";
+		}
+		else if (findActiveBird(findWhiteBirds(),"white")!="")
+		{
+			return "white";
+		}else if (findActiveBird(findBlackBirds(),"black")!="")
+		{
+			return "black";
+		}else
+		{
+			Rectangle slingshot=findSlingshot();
+			for(int i=(int) slingshot.getX();i<=(slingshot.getX()+slingshot.width);i++)
+			{
+				for(int j=(int) slingshot.getY();j<=(slingshot.getY()+slingshot.height);j++)
+				{
+					Color bird=new Color(screenshot.getRGB(i, j));
+					if((bird.getRed()==99)&&(bird.getGreen()==170)&&(bird.getBlue()==197))
+					{
+						return "blue";
+					}
+					else if ((bird.getRed()==241)&&(bird.getGreen()==219)&&(bird.getBlue()==32))
+					{
+						return "yellow";
+					}
+					else if ((bird.getRed()==236)&&(bird.getGreen()==233)&&(bird.getBlue()==203))
+					{
+						return "white";
+					}
+					else if ((bird.getRed()==67)&&(bird.getGreen()==67)&&(bird.getBlue()==67))
+					{
+						return "black";
+					}
+					else if((bird.getRed()==214)&&(bird.getGreen()==0)&&(bird.getBlue()==45))
+					{
+						return "red";
+					}
+				}
+			}
+		}
+		return "";
+	}
 }

@@ -24,7 +24,7 @@ import ab.vision.GameStateExtractor.GameState;
 import ab.vision.Vision;
 //Naive agent (server/client version)
 
-public class ClientNaiveAgent implements Runnable {
+public class ClientNaiveAgent extends Agent {
 
 	//focus point
 	private int focus_x;
@@ -65,8 +65,14 @@ public class ClientNaiveAgent implements Runnable {
 		firstShot = true;
 		this.id = id;
 	}
-	
-
+	public void setID(int id)
+	{
+		this.id=id;
+	}
+	public void setIP(String ip)
+	{
+		ar = new ClientActionRobotJava(ip);
+	}
     /* 
      * Run the Client (Naive Agent)
      */
@@ -300,4 +306,20 @@ public class ClientNaiveAgent implements Runnable {
 		na.run();
 		
 	}
+	@Override
+	public String getName() {
+		// TODO Auto-generated method stub
+		return "-nasc";
+	}
+	@Override
+	public void setCurrent_level(int level) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public int getCurrent_level() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
 }

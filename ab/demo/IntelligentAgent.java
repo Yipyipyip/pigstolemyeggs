@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class IntelligentAgent implements Runnable {
+public class IntelligentAgent extends Agent {
 
     private int focus_x;
     private int focus_y;
@@ -295,4 +295,22 @@ public class IntelligentAgent implements Runnable {
         ma.run();
 
     }
+
+	@Override
+	public String getName() {
+		// TODO Auto-generated method stub
+		return "-ia";
+	}
+
+	@Override
+	public void setIP(String ip) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setID(int id) {
+		// TODO Auto-generated method stub
+		
+	}
 }

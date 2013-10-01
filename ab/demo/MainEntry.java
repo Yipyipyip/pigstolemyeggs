@@ -1,129 +1,86 @@
 package ab.demo;
 
+import java.util.ArrayList;
+
 import ab.utils.GameImageRecorder;
 import ab.vision.TestVision;
 
-/**
- * **************************************************************************
- * * ANGRYBIRDS AI AGENT FRAMEWORK
- * * Copyright (c) 2013, XiaoYu (Gary) Ge, Jochen Renz,Stephen Gould,
- * *  Sahan Abeyasinghe,Jim Keys, Kar-Wai Lim, Zain Mubashir,  Andrew Wang, Peng Zhang
- * * All rights reserved.
- * *This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
- * *To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/
- * or send a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
- * ***************************************************************************
- */
+/*****************************************************************************
+ ** ANGRYBIRDS AI AGENT FRAMEWORK Copyright (c) 2013, XiaoYu (Gary) Ge, Jochen
+ * Renz,Stephen Gould, Sahan Abeyasinghe,Jim Keys, Kar-Wai Lim, Zain Mubashir,
+ * Andrew Wang, Peng Zhang All rights reserved. This work is licensed under the
+ * Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+ * To view a copy of this license, visit
+ * http://creativecommons.org/licenses/by-nc-sa/3.0/ or send a letter to
+ * Creative Commons, 444 Castro Street, Suite 900, Mountain View, California,
+ * 94041, USA.
+ *****************************************************************************/
 
 public class MainEntry {
-    // the entry of the software.
-    public static void main(String args[]) {
-        String command = "";
-        if (args.length > 0) {
-            command = args[0];
-            if (args.length == 1 && command.equalsIgnoreCase("-na")) {
-                NaiveAgent na = new NaiveAgent();
-                na.run();
-            } else if (args.length == 1 && command.equalsIgnoreCase("-ia")) {
-                IntelligentAgent ia = new IntelligentAgent();
-                ia.run();
-            } else if (args.length == 1 && command.equalsIgnoreCase("-nasc")) {
-                ClientNaiveAgent na = new ClientNaiveAgent();
-                na.run();
-            } else if (args.length == 2 && command.equalsIgnoreCase("-nasc")) {
-                ClientNaiveAgent na = new ClientNaiveAgent(args[1]);
-                na.run();
-            } else if (args.length == 3 && command.equalsIgnoreCase("-nasc")) {
-                int id = Integer.parseInt(args[2]);
-                ClientNaiveAgent na = new ClientNaiveAgent(args[1], id);
-                na.run();
-            } else if (args.length == 2 && command.equalsIgnoreCase("-na")) {
-                NaiveAgent na = new NaiveAgent();
-                if (!args[1].equalsIgnoreCase("-showSeg")) {
-                    int initialLevel = 1;
-                    try {
-                        initialLevel = Integer.parseInt(args[1]);
-                    } catch (NumberFormatException e) {
-                        System.out.println("wrong level number, will use the default one");
-                    }
-                    na.currentLevel = initialLevel;
-                    na.run();
-                } else {
-                    Thread nathre = new Thread(na);
-                    nathre.start();
-                    Thread thre = new Thread(new TestVision());
-                    thre.start();
-                }
-            } else if (args.length == 2 && command.equalsIgnoreCase("-ia")) {
-                IntelligentAgent ia = new IntelligentAgent();
-                if (!args[1].equalsIgnoreCase("-showSeg")) {
-                    int initialLevel = 1;
-                    try {
-                        initialLevel = Integer.parseInt(args[1]);
-                    } catch (NumberFormatException e) {
-                        System.out
-                                .println("wrong level number, will use the default one");
-                    }
-                    ia.currentLevel = initialLevel;
-                    ia.run();
-                } else {
-                    Thread nathre = new Thread(ia);
-                    nathre.start();
-                    Thread thre = new Thread(new TestVision());
-                    thre.start();
-                }
-            } else if (args.length == 3 && args[2].equalsIgnoreCase("-showSeg") && command.equalsIgnoreCase("-na")) {
-                NaiveAgent na = new NaiveAgent();
-                int initialLevel = 1;
-                try {
-                    initialLevel = Integer.parseInt(args[1]);
-                } catch (NumberFormatException e) {
-                    System.out.println("wrong level number, will use the default one");
-                }
-                na.currentLevel = initialLevel;
-                Thread nathre = new Thread(na);
-                nathre.start();
-                Thread thre = new Thread(new TestVision());
-                thre.start();
+	// the entry of the software.
+	public static void main(String args[]) {
+		Agent a = null;
+		String command = "";
+		if (args.length > 0) {
+			command = args[0];
+				if (command.equalsIgnoreCase("-na")) {
+					a = new NaiveAgent();
+				}else if(command.equalsIgnoreCase("-nae"))
+				{
+					a=new NaiveAgentEnhanced();
+				}else if(command.equalsIgnoreCase("-naet"))
+				{
+					a=new NaiveAgentTargetingStructure();
+				}else if((command.equalsIgnoreCase("-nasc")))
+				{
+					a=new ClientNaiveAgent();
+				}
+				else if((command.equalsIgnoreCase("-ia")))
+				{
+					a=new IntelligentAgent();
+				}
+				else if (command.equalsIgnoreCase("-showTraj")) {
+					 String[] param = {};
+					 // TestTrajectory.main(param);
+					 abTrajectory.main(param);
+					 } else if (command.equalsIgnoreCase("-recordImg")) {
+					
+					 if (args.length < 2)
+					 System.out.println("please specify the directory");
+					 else {
+					 String[] param = { args[1] };
+					
+					 GameImageRecorder.main(param);
+					 }
+					} else if (command.equals("-showSeg")) {
+						Thread thre = new Thread(new TestVision());
+						thre.start();
+					}
+			}
+			for (int i = 1; i < args.length; i++) {
+				command = args[1];
+				if (args[1].contains("-l")) {
+					command = command.replace("-l", "");
+					try {
+						int level = Integer.parseInt(command);
+						a.setCurrent_level(level);
+					} catch (NumberFormatException e) {
 
-            } else if (args.length == 3 && args[2].equalsIgnoreCase("-showSeg")
-                    && command.equalsIgnoreCase("-ia")) {
-                IntelligentAgent ia = new IntelligentAgent();
-                int initialLevel = 1;
-                try {
-                    initialLevel = Integer.parseInt(args[1]);
-                } catch (NumberFormatException e) {
-                    System.out
-                            .println("wrong level number, will use the default one");
-                }
-                ia.currentLevel = initialLevel;
-                Thread nathre = new Thread(ia);
-                nathre.start();
-                Thread thre = new Thread(new TestVision());
-                thre.start();
-
-            } else if (command.equalsIgnoreCase("-showSeg")) {
-                String[] param = {};
-                TestVision.main(param);
-            } else if (command.equalsIgnoreCase("-showTraj")) {
-                String[] param = {};
-                //TestTrajectory.main(param);
-                abTrajectory.main(param);
-            } else if (command.equalsIgnoreCase("-recordImg")) {
-
-                if (args.length < 2)
-                    System.out.println("please specify the directory");
-                else {
-                    String[] param = {args[1]};
-
-                    GameImageRecorder.main(param);
-                }
-            } else {
-                System.out.println("Please input the correct command");
-            }
-        } else {
-            System.out.println("Please input the correct command");
-        }
-
-    }
+					}
+				} else if (command.contains("-id")) {
+					command = command.replace("-id", "");
+					a.setID(Integer.parseInt(command));
+				} else if (command.contains("-ip")) {
+					command = command.replace("-ip", "");
+					a.setIP(command);
+				} else if (command.equals("-showSeg")) {
+					Thread thre = new Thread(new TestVision());
+					thre.start();
+				}
+			}if(a!=null)
+			{
+			a.run();
+			}
+		}
+		
 }
