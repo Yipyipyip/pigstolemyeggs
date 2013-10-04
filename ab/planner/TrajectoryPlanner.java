@@ -9,10 +9,7 @@
 *****************************************************************************/
 package ab.planner;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -458,5 +455,13 @@ public class TrajectoryPlanner {
         }
        
         return activeBird;
-    }   
+    }
+
+    // derives trajectory function to get the gradient at any point
+    public double getGradient(Rectangle sling, Point releasePoint, int x) {
+        setTrajectory(sling, releasePoint);
+        x -= _ref.x;
+        // derivation of parabola
+        return (x/(Math.cos(_theta)*Math.cos(_theta)))/(_scale*getVelocity(_theta)*getVelocity(_theta))-Math.tan(_theta);
+    }
 }

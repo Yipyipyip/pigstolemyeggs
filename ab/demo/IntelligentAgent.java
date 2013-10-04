@@ -25,6 +25,8 @@ import java.util.Random;
 
 public class IntelligentAgent extends Agent {
 
+    private int step = 2;
+
     private int focus_x;
     private int focus_y;
 
@@ -34,6 +36,42 @@ public class IntelligentAgent extends Agent {
 
     private boolean firstShot;
     private Point prevTarget;
+
+    public class LaunchData {
+        private int score;
+        private Point releasePoint;
+        private Rectangle target;
+
+        public LaunchData(int score, Point releasePoint, Rectangle target) {
+            this.score = score;
+            this.releasePoint = releasePoint;
+            this.target = target;
+        }
+
+        public void setScore(int score) {
+            this.score = score;
+        }
+
+        public void setReleasePoint(Point releasePoint) {
+            this.releasePoint = releasePoint;
+        }
+
+        public void setTarget(Rectangle target) {
+            this.target = target;
+        }
+
+        public int getScore() {
+            return score;
+        }
+
+        public Point getReleasePoint() {
+            return releasePoint;
+        }
+
+        public Rectangle getTarget() {
+            return target;
+        }
+    }
 
     // Michael's Agent
     public IntelligentAgent() {
@@ -156,13 +194,68 @@ public class IntelligentAgent extends Agent {
                 ArrayList<Shot> shots = new ArrayList<Shot>();
                 Point releasePoint;
                 {
-                    // random pick up a pig
+                    // find shot which hits the most objects
+                    // TODO also aim at pigs?
+                    List<Rectangle> ice = vision.getHitableIce();
+                    List<Rectangle> wood = vision.getHitableWood();
+                    List<Rectangle> stone = vision.getHitableStone();
+                    ArrayList<Rectangle> allHittable = new ArrayList<Rectangle>();
+                    allHittable.addAll(vision.getHitableIce());
+                    allHittable.addAll(vision.getHitableWood());
+                    allHittable.addAll(vision.getHitableStone());
+                    ArrayList<Rectangle> allObjects = new ArrayList<Rectangle>();
+                    allObjects.addAll(vision.findIce());
+                    allObjects.addAll(vision.findWood());
+                    allObjects.addAll(vision.findStones());
+                    ArrayList<LaunchData> possibleLaunchPoints = new ArrayList<LaunchData>();
+                    // iterate through all hittable objects
+                    for (Rectangle rect : allHittable) {
+                        System.out.println("Top: " + rect.x + "|" + rect.y);
+                        ArrayList<Point> launchpoints = tp.estimateLaunchPoint(sling, new Point((int) rect.getCenterX(), (int) rect.getCenterY()));
+                        // iterate through both possible launchpoints to hit that object
+                        for (Point launch : launchpoints) {
+                            System.out.println("Launch: " + launch);
+                            ArrayList<Rectangle> intersects = new ArrayList<Rectangle>();
+                            int trajY = tp.getYCoordinate(sling, launch, (int) rect.getCenterX());
+                            int yStart = trajY;
+                            int xStart = (int) rect.getCenterX();
+                            int score = 0;
+                            // iterate through all point behind the hit object
+                            for (int trajX = xStart; trajY >= 0 && trajX - xStart < 100 && trajY - yStart < 100; trajX += step) {
+                                trajY = tp.getYCoordinate(sling, launch, trajX);
+                                for (Rectangle object : allObjects) {
+                                    if (object.contains(trajX, trajY) && !intersects.contains(object)) {
+                                        intersects.add(object);
+                                        System.out.println("intersect " + object);
+                                        score += 1 - Math.max(trajX - xStart, trajY - yStart) / 100;
+                                    }
+                                }
+                            }
+                            // add launchpoint to possibilities
+                            if (possibleLaunchPoints.size() < 3) {
+                                possibleLaunchPoints.add(new LaunchData(intersects.size(), launch, rect));
+                            } else {
+                                // find worst possiblity
+                                LaunchData min = null;
+                                for (LaunchData ld : possibleLaunchPoints) {
+                                    if (min == null || ld.getScore() < min.getScore()) {
+                                        min = ld;
+                                    }
+                                }
+                                // replace worst possibility
+                                if (intersects.size() > min.getScore()) {
+                                    possibleLaunchPoints.remove(min);
+                                    possibleLaunchPoints.add(new LaunchData(intersects.size(), launch, rect));
+                                }
+                            }
+                        }
+                    }
                     Random r = new Random();
-
-                    int index = r.nextInt(pigs.size());
-                    Rectangle pig = pigs.get(index);
-                    Point _tpt = new Point((int) pig.getCenterX(),
-                            (int) pig.getCenterY());
+                    int index = r.nextInt(possibleLaunchPoints.size());
+                    LaunchData launchData = possibleLaunchPoints.get(index);
+                    Rectangle target = launchData.getTarget();
+                    Point _tpt = new Point((int) target.getCenterX(),
+                            (int) target.getCenterY());
                     boolean yellow = false;
                     if (vision.findActiveBird() == "yellow") {
                         // shoot shorter if the yellow bird is active
@@ -183,24 +276,7 @@ public class IntelligentAgent extends Agent {
 
                     prevTarget = new Point(_tpt.x, _tpt.y);
 
-                    // estimate the trajectory
-                    ArrayList<Point> pts = tp.estimateLaunchPoint(sling, _tpt);
-
-                    // do a high shot when entering a level to find an accurate
-                    // velocity
-                    if (firstShot && pts.size() > 1) {
-                        releasePoint = pts.get(1);
-                    } else if (pts.size() == 1)
-                        releasePoint = pts.get(0);
-                    else {
-                        // System.out.println("first shot " + firstShot);
-                        // randomly choose between the trajectories, with a 1 in
-                        // 6 chance of choosing the high one
-                        if (r.nextInt(6) == 0)
-                            releasePoint = pts.get(1);
-                        else
-                            releasePoint = pts.get(0);
-                    }
+                    releasePoint = launchData.getReleasePoint();
                     Point refPoint = tp.getReferencePoint(sling);
                     /* Get the center of the active bird */
                     focus_x = (int) ((Env.getFocuslist()
@@ -225,15 +301,16 @@ public class IntelligentAgent extends Agent {
                         int xStep = 1;
                         // calculate tap time for the yellow bird
                         if (yellow) {
+                            System.out.println("yellow");
                             for (int x = focus_x; x < _tpt.x; x += xStep) {
                                 int y = tp.getYCoordinate(sling, releasePoint, x);
-                                double v = tp.getVelocity(releaseAngle);
+                                System.out.println("y: "+y);
                                 // derivation of the trajectory function
-                                int scale = sling.height + sling.width;
-                                double gradient = 2 * x / (scale * v * v) - 1;//1 - (2 * x) / (v * v);
+                                double gradient = tp.getGradient(sling, releasePoint, x);
+                                System.out.println("Gradient: "+gradient);
                                 // calculate resulting y is you tap now
                                 int dist = _tpt.x - x;
-                                int decline = (dist * dist) / 10000;
+                                int decline = (dist * dist) / 10000;  // TODO 10000 is arbitrary; find better value?
                                 double calcY = y + dist * gradient + decline;
                                 // set tap time if calculated y is lower than the target's y
                                 if (calcY > _tpt.y) {
@@ -296,21 +373,21 @@ public class IntelligentAgent extends Agent {
 
     }
 
-	@Override
-	public String getName() {
-		// TODO Auto-generated method stub
-		return "-ia";
-	}
+    @Override
+    public String getName() {
+        // TODO Auto-generated method stub
+        return "-ia";
+    }
 
-	@Override
-	public void setIP(String ip) {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void setIP(String ip) {
+        // TODO Auto-generated method stub
 
-	@Override
-	public void setID(int id) {
-		// TODO Auto-generated method stub
-		
-	}
+    }
+
+    @Override
+    public void setID(int id) {
+        // TODO Auto-generated method stub
+
+    }
 }
