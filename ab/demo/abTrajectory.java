@@ -10,16 +10,6 @@ package ab.demo;
 *or send a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
 *****************************************************************************/
 
-import java.awt.Color;
-import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.net.UnknownHostException;
-import java.util.List;
-
-import javax.imageio.ImageIO;
-
 import ab.planner.TrajectoryPlanner;
 import ab.server.Proxy;
 import ab.server.proxy.message.ProxyScreenshotMessage;
@@ -27,6 +17,14 @@ import ab.utils.ShowDebuggingImage;
 import ab.vision.GameStateExtractor;
 import ab.vision.Vision;
 import ab.vision.VisionUtils;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.net.UnknownHostException;
+import java.util.List;
 // User Interface of the trajectory module
 public class abTrajectory {
     private static Proxy server;

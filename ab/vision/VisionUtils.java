@@ -10,13 +10,8 @@
 
 package ab.vision;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Point;
-import java.awt.Polygon;
-import java.awt.Rectangle;
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -28,8 +23,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-
-import javax.imageio.ImageIO;
 
 /* VisionUtils ------------------------------------------------------------ */
 

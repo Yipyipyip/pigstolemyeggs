@@ -9,14 +9,17 @@
 *****************************************************************************/
 package ab.utils;
 
-import java.io.*;
-import java.util.*;
-import java.awt.*;
-import java.awt.image.*;
-import java.awt.event.*;
-import javax.imageio.*;
+import ab.vision.VisionUtils;
+
+import javax.imageio.ImageIO;
 import javax.swing.*;
-import ab.vision.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 public class ShowDebuggingImage {
 

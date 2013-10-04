@@ -9,7 +9,7 @@
 *****************************************************************************/
 package ab.demo.other;
 
-import java.awt.Point;
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;

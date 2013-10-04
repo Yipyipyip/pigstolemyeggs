@@ -9,19 +9,18 @@
  *****************************************************************************/
 package ab.demo;
 
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
 import ab.demo.other.ClientActionRobot;
 import ab.demo.other.ClientActionRobotJava;
 import ab.demo.other.Env;
 import ab.planner.TrajectoryPlanner;
 import ab.vision.GameStateExtractor.GameState;
 import ab.vision.Vision;
+
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 //Naive agent (server/client version)
 
 public class ClientNaiveAgent extends Agent {

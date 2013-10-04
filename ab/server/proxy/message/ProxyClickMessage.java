@@ -9,9 +9,8 @@
 *****************************************************************************/
 package ab.server.proxy.message;
 
-import org.json.simple.JSONObject;
-
 import ab.server.ProxyMessage;
+import org.json.simple.JSONObject;
 
 public class ProxyClickMessage implements ProxyMessage<Object> {
 	private int x, y;

@@ -10,16 +10,15 @@
 
 package ab.demo.util;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-
-import javax.imageio.ImageIO;
-
 import ab.server.Proxy;
 import ab.server.proxy.message.ProxyScreenshotMessage;
 import ab.vision.GameStateExtractor;
 import ab.vision.GameStateExtractor.GameState;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
 
 public class StateUtil {

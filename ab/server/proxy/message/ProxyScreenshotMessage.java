@@ -9,10 +9,9 @@
 *****************************************************************************/
 package ab.server.proxy.message;
 
+import ab.server.ProxyMessage;
 import org.apache.commons.codec.binary.Base64;
 import org.json.simple.JSONObject;
-
-import ab.server.ProxyMessage;
 
 // request a screenshot from the game
 public class ProxyScreenshotMessage implements ProxyMessage<byte[]> {

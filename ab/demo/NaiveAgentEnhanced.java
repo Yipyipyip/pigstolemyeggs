@@ -9,18 +9,6 @@
  *****************************************************************************/
 package ab.demo;
 
-import java.awt.Image;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
-import javax.imageio.ImageIO;
-
 import ab.demo.other.ActionRobot;
 import ab.demo.other.Env;
 import ab.demo.other.Shot;
@@ -28,6 +16,12 @@ import ab.demo.util.StateUtil;
 import ab.planner.TrajectoryPlanner;
 import ab.vision.GameStateExtractor.GameState;
 import ab.vision.Vision;
+
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class NaiveAgentEnhanced extends Agent {
 

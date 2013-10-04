@@ -10,18 +10,12 @@
 
 package ab.vision;
 
-import java.awt.Color;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
 import Jama.Matrix;
+
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.util.*;
+import java.util.List;
 
 /* Vision ----------------------------------------------------------------- */
 
@@ -1117,11 +1111,11 @@ public class Vision {
 	}
 	public List<Rectangle> getHitableIce()
 	{
-		return getHitableObjects(findWood());
+		return getHitableObjects(findIce());
 	}
 	public List<Rectangle> getHitableWood()
 	{
-		return getHitableObjects(findIce());
+		return getHitableObjects(findWood());
 	}
 	public List<Rectangle> getHitableStone()
 	{

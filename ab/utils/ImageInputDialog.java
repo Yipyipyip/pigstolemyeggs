@@ -10,15 +10,14 @@
 
 package ab.utils;
 
-import java.io.*;
-import java.util.*;
-import java.util.List;
-import java.awt.*;
-import java.awt.image.*;
-import java.awt.event.*;
-import javax.imageio.*;
 import javax.swing.*;
-import ab.vision.*;
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ImageInputDialog {
 

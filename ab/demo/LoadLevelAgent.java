@@ -1,13 +1,12 @@
 package ab.demo;
 
+import ab.demo.other.ActionRobot;
+import ab.vision.TestVision;
+
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-
-import javax.imageio.ImageIO;
-
-import ab.demo.other.ActionRobot;
-import ab.vision.TestVision;
 
 public class LoadLevelAgent {
 public static void main(String args[])

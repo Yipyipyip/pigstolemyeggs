@@ -10,9 +10,15 @@
 
 package ab.vision;
 
-import java.awt.Color;
-import java.awt.Point;
-import java.awt.Rectangle;
+import Jama.Matrix;
+import ab.demo.other.ActionRobot;
+import ab.demo.util.StateUtil;
+import ab.server.Proxy;
+import ab.server.proxy.message.ProxyScreenshotMessage;
+import ab.utils.ShowDebuggingImage;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -21,15 +27,6 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
-
-import javax.imageio.ImageIO;
-
-import Jama.Matrix;
-import ab.demo.other.ActionRobot;
-import ab.demo.util.StateUtil;
-import ab.server.Proxy;
-import ab.server.proxy.message.ProxyScreenshotMessage;
-import ab.utils.ShowDebuggingImage;
 
 /* TestVision ------------------------------------------------------------- */
 

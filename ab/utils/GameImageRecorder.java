@@ -9,17 +9,16 @@
 *****************************************************************************/
 package ab.utils;
 
+import ab.server.Proxy;
+import ab.server.proxy.message.ProxyScreenshotMessage;
+import ab.vision.VisionUtils;
+
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.UnknownHostException;
-
-import javax.imageio.ImageIO;
-
-import ab.server.Proxy;
-import ab.server.proxy.message.ProxyScreenshotMessage;
-import ab.vision.VisionUtils;
 
 /* GameImageRecorder ------------------------------------------------------ */
 

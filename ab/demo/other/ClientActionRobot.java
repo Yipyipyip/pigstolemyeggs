@@ -10,16 +10,16 @@
 
 package ab.demo.other;
 
-import java.awt.Color;
+import external.ClientMessageEncoder;
+import external.ClientMessageTable;
+
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-
-import external.ClientMessageEncoder;
-import external.ClientMessageTable;
 /**
  * A server/client version of the java util class that encodes client messages and decodes 
  * the corresponding server messages complying with the protocols. Its subclass is ClientActionRobotJava.java 

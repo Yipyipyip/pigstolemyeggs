@@ -1,7 +1,5 @@
 package ab.demo;
 
-import java.util.ArrayList;
-
 import ab.utils.GameImageRecorder;
 import ab.vision.TestVision;
 

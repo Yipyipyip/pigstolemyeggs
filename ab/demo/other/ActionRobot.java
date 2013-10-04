@@ -9,14 +9,6 @@ a ** ANGRYBIRDS AI AGENT FRAMEWORK
  *****************************************************************************/
 package ab.demo.other;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.net.UnknownHostException;
-import java.util.List;
-
-import javax.imageio.ImageIO;
-
 import ab.demo.util.StateUtil;
 import ab.server.Proxy;
 import ab.server.proxy.message.ProxyClickMessage;
@@ -24,6 +16,13 @@ import ab.server.proxy.message.ProxyDragMessage;
 import ab.server.proxy.message.ProxyMouseWheelMessage;
 import ab.server.proxy.message.ProxyScreenshotMessage;
 import ab.vision.GameStateExtractor.GameState;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.net.UnknownHostException;
+import java.util.List;
 
 /**
  * Util class for basic functions

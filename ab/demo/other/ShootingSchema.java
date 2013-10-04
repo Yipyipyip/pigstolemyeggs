@@ -9,13 +9,13 @@
 *****************************************************************************/
 package ab.demo.other;
 
+import ab.server.Proxy;
+import ab.server.proxy.message.ProxyDragMessage;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
-
-import ab.server.Proxy;
-import ab.server.proxy.message.ProxyDragMessage;
 
 public class ShootingSchema {
 private LinkedList<Shot> shootings;
