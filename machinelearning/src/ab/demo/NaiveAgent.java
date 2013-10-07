@@ -216,6 +216,69 @@ public class NaiveAgent implements Runnable {
 		
 	}
 	
+	
+	class MLojbects {
+		ArrayList<String> objects;
+		int x;
+		int y;
+		public  MLojbects(int x, int y){
+			this.x = x;
+			this.y = y;
+			this.objects = new ArrayList<String>();
+		}
+	}
+	
+	//Find all objects (rectangles) in the 7x7 grid around the target
+	public void RectInGrid(Point target){
+
+		// capture Image
+		BufferedImage screenshot = ActionRobot.doScreenShot();
+		// process image
+		Vision vision = new Vision(screenshot);			
+		List<Rectangle> pigs = vision.findPigs();
+		List<Rectangle> Obstacles_wood = vision.findWood();
+		List<Rectangle> Obstacles_stone = vision.findStones();
+        List<Rectangle> Obstacles_ice   = vision.findIce();			
+		
+	  int GridSize = 20; //Grid size for the 7x7 grid
+	  double StartX = target.getX() - 1*GridSize;
+	  double StartY = target.getY() - 3*GridSize;
+
+	  ArrayList<MLojbects> Storage = new  ArrayList<MLojbects>();
+      for(int y=0; y<7; y++){
+    	  for(int x=0; x<7; x++){  
+    		  MLojbects curObject = new MLojbects(x,y);
+    		  Rectangle gridTest = new Rectangle((int)(StartX + x*GridSize),(int)(StartY + y*GridSize),GridSize,GridSize);
+    			for( Rectangle rec : pigs ){
+    				if( rec.intersects(gridTest) ){
+    					curObject.objects.add("Pig");    					
+    				}
+    			}
+    			for( Rectangle stone : Obstacles_stone ){
+    				if( stone.intersects(gridTest) ){
+    					curObject.objects.add("Stone");    					
+    				}		
+    			}
+    			for( Rectangle ice : Obstacles_ice ){
+    				if( ice.intersects(gridTest) ){
+    					curObject.objects.add("Ice");    					
+    				}	
+    			}
+    			for( Rectangle wood : Obstacles_wood ){
+    				if( wood.intersects(gridTest) ){
+    					curObject.objects.add("Wood");    					
+    				}	
+    			}  
+    		System.out.println(x);
+    		System.out.println(y);
+    		System.out.println( curObject.objects );
+    		Storage.add(curObject);
+    	  }
+      }
+	  
+	  
+	}
+	
 	public GameState solve()
 
 	{
@@ -241,6 +304,7 @@ public class NaiveAgent implements Runnable {
 		List<Rectangle> blue_birds = vision.findBlueBirds();
 		List<Rectangle> yellow_birds = vision.findYellowBirds();
 		List<Rectangle> pigs = vision.findPigs();
+		List<Rectangle> Obstacles_wood = vision.findWood();
 		int bird_count = 0;
 		bird_count = red_birds.size() + blue_birds.size() + yellow_birds.size();
 
@@ -273,11 +337,14 @@ public class NaiveAgent implements Runnable {
 					// random pick up a pig
 					Random r = new Random();
 
+					//int index = r.nextInt(Obstacles_wood.size());
+					//Rectangle pig = Obstacles_wood.get(index);
 					int index = r.nextInt(pigs.size());
 					Rectangle pig = pigs.get(index);
 					Point _tpt = new Point((int) pig.getCenterX(),
 							(int) pig.getCenterY());
 
+					RectInGrid(_tpt);
 					System.out.println("the target point is " + _tpt);
 
 					// if the target is very close to before, randomly choose a
