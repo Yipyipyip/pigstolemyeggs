@@ -93,6 +93,10 @@ public class NaiveAgent implements Runnable {
 				}
 				System.out.println("###### The game score is " + score
 						+ "########");
+				for(MLojbects s : Storage){
+					WinStorage.add(s);	
+				}
+				Storage.clear();
 				ar.loadLevel(++currentLevel);
 				// make a new trajectory planner whenever a new level is entered
 				tp = new TrajectoryPlanner();
@@ -101,6 +105,10 @@ public class NaiveAgent implements Runnable {
 				firstShot = true;
 			} else if (state == GameState.LOST) {
 				System.out.println("restart");
+				for(MLojbects s : Storage){
+					LostStorage.add(s);	
+				}
+				Storage.clear();
 				ar.restartLevel();
 			} else if (state == GameState.LEVEL_SELECTION) {
 				System.out
@@ -228,6 +236,10 @@ public class NaiveAgent implements Runnable {
 		}
 	}
 	
+	static 	ArrayList<MLojbects> Storage = new  ArrayList<MLojbects>();
+	static 	ArrayList<MLojbects> WinStorage = new  ArrayList<MLojbects>();
+	static 	ArrayList<MLojbects> LostStorage = new  ArrayList<MLojbects>();
+	
 	//Find all objects (rectangles) in the 7x7 grid around the target
 	public void RectInGrid(Point target){
 
@@ -244,7 +256,7 @@ public class NaiveAgent implements Runnable {
 	  double StartX = target.getX() - 1*GridSize;
 	  double StartY = target.getY() - 3*GridSize;
 
-	  ArrayList<MLojbects> Storage = new  ArrayList<MLojbects>();
+	  //ArrayList<MLojbects> Storage = new  ArrayList<MLojbects>();
       for(int y=0; y<7; y++){
     	  for(int x=0; x<7; x++){  
     		  MLojbects curObject = new MLojbects(x,y);
@@ -278,6 +290,82 @@ public class NaiveAgent implements Runnable {
 	  
 	  
 	}
+	
+	
+	//Chance of winning by shooting here
+	public double ProbGrid(Point target){
+
+		// capture Image
+		BufferedImage screenshot = ActionRobot.doScreenShot();
+		// process image
+		Vision vision = new Vision(screenshot);			
+		List<Rectangle> pigs = vision.findPigs();
+		List<Rectangle> Obstacles_wood = vision.findWood();
+		List<Rectangle> Obstacles_stone = vision.findStones();
+        List<Rectangle> Obstacles_ice   = vision.findIce();			
+		
+	  int GridSize = 20; //Grid size for the 7x7 grid
+	  double StartX = target.getX() - 1*GridSize;
+	  double StartY = target.getY() - 3*GridSize;
+
+	  double Prob = 0.0;
+	  //ArrayList<MLojbects> Storage = new  ArrayList<MLojbects>();
+      for(int y=0; y<7; y++){
+    	  for(int x=0; x<7; x++){  
+    		  MLojbects curObject = new MLojbects(x,y);
+    		  Rectangle gridTest = new Rectangle((int)(StartX + x*GridSize),(int)(StartY + y*GridSize),GridSize,GridSize);
+    			for( Rectangle rec : pigs ){
+    				if( rec.intersects(gridTest) ){
+    					curObject.objects.add("Pig");    					
+    				}
+    			}
+    			for( Rectangle stone : Obstacles_stone ){
+    				if( stone.intersects(gridTest) ){
+    					curObject.objects.add("Stone");    					
+    				}		
+    			}
+    			for( Rectangle ice : Obstacles_ice ){
+    				if( ice.intersects(gridTest) ){
+    					curObject.objects.add("Ice");    					
+    				}	
+    			}
+    			for( Rectangle wood : Obstacles_wood ){
+    				if( wood.intersects(gridTest) ){
+    					curObject.objects.add("Wood");    					
+    				}	
+    			}  
+    		//System.out.println(x);
+    		//System.out.println(y);
+    		//System.out.println( curObject.objects );
+    		//Storage.add(curObject);
+    		int TotalWin = 0; //Count amount of times in history where grid shot win
+    		int TotalLost = 0; //Count amount of times in history where grid shot lost    		
+    		for( MLojbects won : WinStorage){
+    			if( won.x != x || won.y != y ){
+    				continue;
+    			}
+    			if( won.objects.containsAll(curObject.objects) ){
+    				TotalWin++;
+    				System.out.println("WinGrid");
+    			}
+    		}
+    		for( MLojbects lost : LostStorage){
+    			if( lost.x != x || lost.y != y ){
+    				continue;
+    			}
+    			if( lost.objects.containsAll(curObject.objects) ){
+    				TotalLost++;
+    				//System.out.println("LostGrid");
+    			}
+    		}
+    		if(  TotalWin + TotalLost != 0){
+    			Prob += ( (double)TotalWin/(double)(TotalWin + TotalLost) )/(7.0*7.0);//Add chance of winning
+    		}
+    	  }
+      }
+	  
+	  return Prob;
+	}	
 	
 	public GameState solve()
 
@@ -345,6 +433,7 @@ public class NaiveAgent implements Runnable {
 							(int) pig.getCenterY());
 
 					RectInGrid(_tpt);
+					System.out.println( ProbGrid(_tpt) );
 					System.out.println("the target point is " + _tpt);
 
 					// if the target is very close to before, randomly choose a
