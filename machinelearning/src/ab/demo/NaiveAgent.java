@@ -346,7 +346,7 @@ public class NaiveAgent implements Runnable {
     			}
     			if( won.objects.containsAll(curObject.objects) ){
     				TotalWin++;
-    				System.out.println("WinGrid");
+    				//System.out.println("WinGrid");
     			}
     		}
     		for( MLojbects lost : LostStorage){
@@ -366,6 +366,67 @@ public class NaiveAgent implements Runnable {
 	  
 	  return Prob;
 	}	
+	
+	//Chance of winning by shooting here
+	public Point FindMaxChance(){	
+		Point Result = null;
+		
+		// capture Image
+		BufferedImage screenshot = ActionRobot.doScreenShot();
+		// process image
+		Vision vision = new Vision(screenshot);		
+		
+		List<Rectangle> pigs = vision.findPigs();
+		List<Rectangle> Obstacles_wood = vision.findWood();
+		List<Rectangle> Obstacles_stone = vision.findStones();
+        List<Rectangle> Obstacles_ice   = vision.findIce();
+        
+        double MaxChance = 0.0;
+		for( Rectangle rec : pigs ){
+			Point _tpt = new Point((int) rec.getCenterX(),
+					(int) rec.getCenterY());
+			if(  ProbGrid(_tpt) > MaxChance ){
+				Result  =  _tpt;
+				MaxChance = ProbGrid(_tpt);
+			}
+		}
+		for( Rectangle rec : Obstacles_stone ){
+			Point _tpt = new Point((int) rec.getCenterX(),
+					(int) rec.getCenterY());
+			if(  ProbGrid(_tpt) > MaxChance ){
+				Result  =  _tpt;
+				MaxChance = ProbGrid(_tpt);
+			}	
+		}
+		for( Rectangle rec : Obstacles_ice ){
+			Point _tpt = new Point((int) rec.getCenterX(),
+					(int) rec.getCenterY());
+			if(  ProbGrid(_tpt) > MaxChance ){
+				Result  =  _tpt;
+				MaxChance = ProbGrid(_tpt);
+			}
+		}
+		for( Rectangle rec : Obstacles_wood ){
+			Point _tpt = new Point((int) rec.getCenterX(),
+					(int) rec.getCenterY());
+			if(  ProbGrid(_tpt) > MaxChance ){
+				Result  =  _tpt;
+				MaxChance = ProbGrid(_tpt);
+			}
+		}          
+        if( Result == null ){
+			// random pick up a pig
+			Random r = new Random();
+
+			//int index = r.nextInt(Obstacles_wood.size());
+			//Rectangle pig = Obstacles_wood.get(index);
+			int index = r.nextInt(pigs.size());
+			Rectangle pig = pigs.get(index);
+			Result = new Point((int) pig.getCenterX(),
+					(int) pig.getCenterY());          	
+        }
+		return Result;
+	}
 	
 	public GameState solve()
 
@@ -393,6 +454,8 @@ public class NaiveAgent implements Runnable {
 		List<Rectangle> yellow_birds = vision.findYellowBirds();
 		List<Rectangle> pigs = vision.findPigs();
 		List<Rectangle> Obstacles_wood = vision.findWood();
+		List<Rectangle> Obstacles_stone = vision.findStones();
+        List<Rectangle> Obstacles_ice   = vision.findIce();					
 		int bird_count = 0;
 		bird_count = red_birds.size() + blue_birds.size() + yellow_birds.size();
 
@@ -416,6 +479,7 @@ public class NaiveAgent implements Runnable {
 		if (sling != null) {
 			ar.fullyZoom();
 			ObjectRelations();
+			//MaxChanceShot = 
 			if (!pigs.isEmpty()) {
 
 				// Initialise a shot list
@@ -432,8 +496,12 @@ public class NaiveAgent implements Runnable {
 					Point _tpt = new Point((int) pig.getCenterX(),
 							(int) pig.getCenterY());
 
+					//Extra: use the point with maximum probability instead
+					_tpt = FindMaxChance();
+					
+					//Store probability calculations
 					RectInGrid(_tpt);
-					System.out.println( ProbGrid(_tpt) );
+					System.out.println( ProbGrid(_tpt) );//probability of winning when shooting here
 					System.out.println("the target point is " + _tpt);
 
 					// if the target is very close to before, randomly choose a
