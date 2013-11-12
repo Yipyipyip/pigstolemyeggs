@@ -94,13 +94,15 @@ public class NaiveAgent implements Runnable {
 				System.out.println("###### The game score is " + score
 						+ "########");
 				for(MLojbects s : Storage){
-					WinStorage.add(s);	
+					WinStorage.add(s);	//add all current shots as winning shots
 				}
 				Storage.clear();
 				ar.loadLevel(++currentLevel);
 				// make a new trajectory planner whenever a new level is entered
 				tp = new TrajectoryPlanner();
 
+				FindTerrainSquares();//use the json file to find the terrain squares in the level
+				
 				// first shot on this level, try high shot first
 				firstShot = true;
 			} else if (state == GameState.LOST) {
@@ -240,6 +242,72 @@ public class NaiveAgent implements Runnable {
 	static 	ArrayList<MLojbects> WinStorage = new  ArrayList<MLojbects>();
 	static 	ArrayList<MLojbects> LostStorage = new  ArrayList<MLojbects>();
 	
+	static 	ArrayList<Rectangle> TerrainSquares = new  ArrayList<Rectangle>();
+	
+	public void FindTerrainSquares(){
+		TerrainSquares.clear();
+		String fileLocation = "JsonFiles/Level1-" + Integer.toString( currentLevel ) + ".json"; 
+		DataInputStream i = null;
+		try {
+			i = new DataInputStream(new FileInputStream( fileLocation ));
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		BufferedReader b = new BufferedReader(new InputStreamReader(i));
+		String str;
+		try {
+			while ((str = b.readLine()) != null) { 
+				if( str.contains("TERRAIN_TEXTURED") ){
+					String sizeString = str.substring(36);
+					System.out.println (sizeString); 
+					int ObjectX = Integer.parseInt( sizeString.substring( 0 ,  sizeString.indexOf('X') ) );
+					int ObjectY = Integer.parseInt( sizeString.substring(  sizeString.indexOf('X') + 1,  sizeString.indexOf('\"') ) );					
+					//str.substring(30);
+					//30
+					System.out.println (ObjectX); 
+					System.out.println (ObjectY); 
+					str = b.readLine();
+					double LocationDx = Double.parseDouble( str.substring(11, str.indexOf(',') ) );
+					//Double.parseDouble(
+					//11 
+					System.out.println (str); 
+					System.out.println (LocationDx); 
+					str = b.readLine();	
+					double LocationDy = Double.parseDouble( str.substring(11) );
+					System.out.println (str); 
+					System.out.println (LocationDy); 
+					double widthR = 0.0;
+					double heigthR = 0.0;
+					if( ObjectX == 1 && ObjectY == 1 ){
+						widthR = 18.4;
+						heigthR = 18.4;
+					} else if( ObjectX == 5 && ObjectY == 2){
+						widthR = 97.0;
+						heigthR = 32.0;						
+					} else if( ObjectX == 5 && ObjectY == 5){
+						widthR = 97.0;
+						heigthR = 97.0;						
+					} else if( ObjectX == 10 && ObjectY == 2){
+						widthR = 194.0;
+						heigthR = 33.0;						
+					} else if( ObjectX == 10 && ObjectY == 10){
+						widthR = 194.0;
+						heigthR = 97.0;						
+					} else if( ObjectX == 32 && ObjectY == 2){
+						widthR = 642.0;
+						heigthR = 33.0;						
+					}
+					Rectangle terrainTest = new Rectangle( (int) (LocationDx*40), (int) (100-LocationDy*40), (int)widthR,(int)heigthR);
+					TerrainSquares.add(terrainTest);
+				} 
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	//Find all objects (rectangles) in the 7x7 grid around the target
 	public void RectInGrid(Point target){
 
@@ -252,7 +320,7 @@ public class NaiveAgent implements Runnable {
 		List<Rectangle> Obstacles_stone = vision.findStones();
         List<Rectangle> Obstacles_ice   = vision.findIce();			
 		
-	  int GridSize = 20; //Grid size for the 7x7 grid
+	  int GridSize = 20; //Grid cell size for the 7x7 grid
 	  double StartX = target.getX() - 1*GridSize;
 	  double StartY = target.getY() - 3*GridSize;
 
@@ -281,6 +349,11 @@ public class NaiveAgent implements Runnable {
     					curObject.objects.add("Wood");    					
     				}	
     			}  
+    			for( Rectangle terrain : TerrainSquares ){
+    				if( terrain.intersects(gridTest) ){
+    					curObject.objects.add("Terrain");    					
+    				}	
+    			}   			
     		System.out.println(x);
     		System.out.println(y);
     		System.out.println( curObject.objects );
@@ -334,6 +407,11 @@ public class NaiveAgent implements Runnable {
     					curObject.objects.add("Wood");    					
     				}	
     			}  
+    			for( Rectangle terrain : TerrainSquares ){
+    				if( terrain.intersects(gridTest) ){
+    					curObject.objects.add("Terrain");    					
+    				}	
+    			}   
     		//System.out.println(x);
     		//System.out.println(y);
     		//System.out.println( curObject.objects );
@@ -413,7 +491,15 @@ public class NaiveAgent implements Runnable {
 				Result  =  _tpt;
 				MaxChance = ProbGrid(_tpt);
 			}
-		}          
+		}  
+		for( Rectangle rec : TerrainSquares ){
+			Point _tpt = new Point((int) rec.getCenterX(),
+					(int) rec.getCenterY());
+			if(  ProbGrid(_tpt) > MaxChance ){
+				Result  =  _tpt;
+				MaxChance = ProbGrid(_tpt);
+			}
+		}   
         if( Result == null ){
 			// random pick up a pig
 			Random r = new Random();
