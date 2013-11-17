@@ -1,0 +1,10 @@
+Client side:
+
+1. ClientNaiveAgent.java: in the main method, replace na.test() with na.run();
+2. ClientMessageEncoder: correct a typo (cshoot is sent by cFastshoot ID) in the previous version
+3. A few lines added to the doc regarding the get score functions. Those functions will return a fixed length array 21 * 4 bytes , scores of unsolved and unavailable levels are set to 0.
+
+Server side
+1. We provide the latest server executable. I removed video recording, and logging component from this public version, the remaining are all the same with the server we are going to use in the competition. 
+
+2.  I added a key listener to that server control panel, you can press "Entre" to trigger the start button
