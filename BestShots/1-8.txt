@@ -1,0 +1,9 @@
+[
+{
+Theta:0.76
+Angle:43.50566640873347
+releaseX:-230
+releaseY:727
+tapTime:1407
+score:56910
+}
