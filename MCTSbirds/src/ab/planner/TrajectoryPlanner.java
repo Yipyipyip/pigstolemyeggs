@@ -214,7 +214,7 @@ public class TrajectoryPlanner {
         theta1 = actualToLaunch(theta1);
         theta2 = actualToLaunch(theta2);
         
-        System.out.println("Two angles: " + Math.toDegrees(theta1) + ", " + Math.toDegrees(theta2));
+        //System.out.println("Two angles: " + Math.toDegrees(theta1) + ", " + Math.toDegrees(theta2));
             
         // add launch points to the list
         ArrayList<Point> pts = new ArrayList<Point>();

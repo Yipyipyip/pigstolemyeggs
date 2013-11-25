@@ -12,9 +12,16 @@ package ab.demo;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -75,13 +82,16 @@ public class NaiveAgent implements Runnable {
 
 	static 	ArrayList<ShotData> Storage = new  ArrayList<ShotData>();
 	static int BestScore = 0;
-	static double currentT = (3.14/2)-0.3;//0.4210;
+	static double currentT = 0.35;//0.4210;
 	static double angleStep = 0.01;	
+	static HashMap<String, Integer> nodeCount = new HashMap<String, Integer>();
+	static HashMap<String, Double> scoreCount = new HashMap<String, Double>();	
+	static int shotFired = 0;
 	
 	public void WriteShot(int score){
 		  try{
 			  // Create file 
-			  FileWriter fstream = new FileWriter("/home/s081286/Angry Birds/MCTSbirds/MCTSresults/1.txt",true);
+			  FileWriter fstream = new FileWriter("/home/s081286/Angry Birds/MCTSbirds/MCTSresults/1-" + Integer.toString(currentLevel) + ".txt",true);
 			  BufferedWriter out = new BufferedWriter(fstream);
 			  out.write("{\n");
 			  for( ShotData  shot: Storage ){
@@ -101,9 +111,51 @@ public class NaiveAgent implements Runnable {
 			  }	
 	}
 	
+	public void ReadShot(){
+		String fileLocation = "/home/s081286/Angry Birds/MCTSbirds/MCTSresults/1-" + Integer.toString(currentLevel) + ".txt"; 
+		DataInputStream i = null;
+		try {
+			i = new DataInputStream(new FileInputStream( fileLocation ));
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		BufferedReader b = new BufferedReader(new InputStreamReader(i));
+		String str;
+		try {
+			while ((str = b.readLine()) != null) { 
+				if( str.contains("score") ){
+					int getScore = Integer.parseInt( str.substring( str.indexOf(':')+1 ) );
+					System.out.println(getScore);
+					BestScore = Math.max(BestScore, getScore);
+				} 
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	
 	// run the client
 	public void run() {
 
+		
+		//Fill up hash map
+		for(int i = 0; i<100; i++){
+			for(int j=0; j<3000;j++){
+				for(int k=0; k<8;k++){	
+					String key =  Integer.toString(i) + "-" + Integer.toString(j) + "-"  + Integer.toString(k);
+				    nodeCount.put(key, new Integer(0));
+				    scoreCount.put(key, new Double(0.0));
+				    //System.out.println(key);				
+				}
+			}			
+		}
+		
+		
+		currentLevel = 10;
+		ReadShot();
 		Storage.clear();//new		
 		ar.loadLevel(currentLevel);
 		while (true) {
@@ -131,7 +183,13 @@ public class NaiveAgent implements Runnable {
 				  WriteShot(score);//write score
 				}
 				currentT += angleStep;
+				for(int i=0; i<Storage.size(); i++){ //Update UCT bounds
+				   String thisKey = Integer.toString( (int)(Storage.get(i).Theta*100) ) + "-" + Integer.toString( Storage.get(i).tapTime ) + "-"  + Integer.toString(i);
+				   int nc = nodeCount.get(thisKey);				    
+				   scoreCount.put(thisKey,  (scoreCount.get(thisKey)* nc + score) / (nc+1) );
+				}
 				Storage.clear();//new
+				shotFired=0;
 				ar.loadLevel(currentLevel);
 				// make a new trajectory planner whenever a new level is entered
 				tp = new TrajectoryPlanner();
@@ -142,7 +200,13 @@ public class NaiveAgent implements Runnable {
 				System.out.println("restart");
 				//WriteShot(0);//write score
 				currentT += angleStep;
+				for(int i=0; i<Storage.size(); i++){ //Update UCT bounds
+					   String thisKey = Integer.toString( (int)(Storage.get(i).Theta*100) ) + "-" + Integer.toString( Storage.get(i).tapTime ) + "-"  + Integer.toString(i);
+					   int nc = nodeCount.get(thisKey);				    
+					   scoreCount.put(thisKey,  (scoreCount.get(thisKey)* nc - 1) / (nc+1) );
+				}
 				Storage.clear();//new
+				shotFired=0;
 				ar.restartLevel();
 			} else if (state == GameState.LEVEL_SELECTION) {
 				System.out
@@ -262,9 +326,42 @@ public class NaiveAgent implements Runnable {
 					focus_y = (int) ((Env.getFocuslist()
 							.containsKey(currentLevel)) ? Env.getFocuslist()
 							.get(currentLevel).getY() : refPoint.y);
+					
+					//score = gameStateExtractor.getScoreInGame(image);
+					
+					//Get the best shot to take with MCTS-UCT
+					int C = 1;
+					double bestMCTS = -1.0;
+					double bestAngle = 0.0;
+					int bestTapTime = 0;
+					int np = 1;
+					if(  Storage.size() > 1 ){
+					   String thisKey = Integer.toString( (int)(Storage.get(Storage.size()-1).Theta*100) ) + "-" + Integer.toString( Storage.get(Storage.size()-1).tapTime ) + "-"  + Integer.toString(Storage.size()-1);
+					   np = nodeCount.get(thisKey);
+					}
+					for(int i=0;i<100; i++){
+						for(int j=0; j<3000; j++){
+							String findKey =  Integer.toString(i) + "-" + Integer.toString(j) + "-"  + Integer.toString(shotFired);
+							double currentScore = scoreCount.get(findKey);
+							int ni = nodeCount.get(findKey);
+							if(ni == 0){
+								ni = 1;
+							}
+							currentScore += C * Math.sqrt( Math.log(np)  / ni );
+							if( currentScore > bestMCTS ){
+								bestMCTS = currentScore;
+								bestAngle = i / 100.0;
+								bestTapTime = j;
+							}
+						    //nodeCount.put(key, new Integer(0));
+						    //scoreCount.put(key, new Double(0.0));
+						}
+					}
+					
 					Random rAngle = new Random();
 					//double rAd =  rAngle.nextDouble();//3.14159/2.0;//rAngle.nextDouble();
-					double rAd =  currentT;//3.14159/2.0;//rAngle.nextDouble();
+					//double rAd =  currentT;//3.14159/2.0;//rAngle.nextDouble();
+					double rAd = bestAngle;
 					System.out.println(rAd);
 					releasePoint = tp.findReleasePoint(sling, rAd );
 					//releasePoint = tp.findReleasePoint(sling, rAd * ( 3.14159/2.0 ) );
@@ -284,10 +381,15 @@ public class NaiveAgent implements Runnable {
 							base = 1400;
 						else
 							base = 550;
-						int tap_time = (int) (base + Math.random() * 1500);
+						//int tap_time = (int) (base + Math.random() * 1500);
+						int tap_time = bestTapTime;
+						System.out.println("Tap time is:" + Integer.toString(tap_time));
 						
 						Storage.add( new ShotData(rAd,Math.toDegrees(releaseAngle),(int)releasePoint.getX(),(int)releasePoint.getY(),tap_time) );
+						String thisKey = Integer.toString( (int)(Storage.get(Storage.size()-1).Theta*100) ) + "-" + Integer.toString( Storage.get(Storage.size()-1).tapTime ) + "-"  + Integer.toString(Storage.size()-1);
+						nodeCount.put( thisKey, nodeCount.get(thisKey) + 1);						
 						
+						shotFired++;
 						shots.add(new Shot(focus_x, focus_y, (int) releasePoint
 								.getX() - focus_x, (int) releasePoint.getY()
 								- focus_y, 0, tap_time));
