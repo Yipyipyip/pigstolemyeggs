@@ -1,5 +1,5 @@
 {
-Theta:1.0400000000000005
+Theta:1.04
 Angle:59.62969732096472
 releaseX:-85
 releaseY:815
