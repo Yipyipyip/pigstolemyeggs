@@ -1,0 +1,13 @@
+{
+Theta:0.48
+Angle:27.449857737912502
+releaseX:-339
+releaseY:600
+tapTime:833
+Theta:0.57
+Angle:32.592581472599264
+releaseX:-313
+releaseY:645
+tapTime:1905
+score:48560
+}

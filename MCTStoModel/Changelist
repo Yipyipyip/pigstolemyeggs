@@ -1,0 +1,12 @@
+Here is a list of major changes, for details, please see ABDoc.pdf under the ./doc folder. The server/client protocols remains unchanged, so the old version agents can still work with the server. 
+
+1. New Vision Module (see Package ./src/ab/vision):
+The new vision module is composed of two image segmentation components. One component segments an image and outputs a list of the minimum bounding rectangles (MBR) of essential objects in the image. The essential objects includes {“Sling”, "Red Bird”, “Yellow Bird”, “Blue Bird“, “Black Bird”, “White Bird”, "Pig", "Ice", “Wood", "Stone", "TNT”, “TrajPoints”}. The other component outputs real shapes instead.  You can use either of them to process a screenshot.
+
+2. Useful methods:
+2.1 Get the type of bird on the sling (see File ./src/ab/demo/other/ActionRobot.java).
+2.2 Get all the supports of an object (see File ./src/ab/utils/ABUtil.java).
+2.3 Test whether a point is reachable by a trajectory (see File ./src/ab/utils/ABUtil.java).
+
+
+4. Code refactoring and bug fixes. 
