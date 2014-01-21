@@ -8,6 +8,6 @@ Theta:0.3
 Angle:17.128047473596666
 releaseX:-281
 releaseY:345
-tapTime:5000
+tapTime:0
 score:42050
 }

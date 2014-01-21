@@ -14,5 +14,10 @@ Angle:25.780226574086104
 releaseX:-264
 releaseY:419
 tapTime:1000
+Theta:0.45
+Angle:25.780226574086104
+releaseX:-264
+releaseY:419
+tapTime:2500
 score:43350
 }

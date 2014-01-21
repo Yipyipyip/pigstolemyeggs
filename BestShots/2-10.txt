@@ -1,9 +1,4 @@
 {
-Theta:0.0
-Angle:-0.0
-releaseX:-460
-releaseY:327
-tapTime:0
 Theta:0.4
 Angle:22.866380594186083
 releaseX:-406

@@ -3,11 +3,11 @@ Theta:1.2
 Angle:68.67676876990157
 releaseX:2
 releaseY:799
-tapTime:5000
+tapTime:0
 Theta:0.6
 Angle:34.339651705464675
 releaseX:-224
 releaseY:619
-tapTime:5000
+tapTime:0
 score:85760
 }

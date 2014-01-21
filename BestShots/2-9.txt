@@ -1,5 +1,5 @@
 {
-Theta:0.0
+Theta:0.4
 Angle:-0.0
 releaseX:-365
 releaseY:252
@@ -8,6 +8,6 @@ Theta:0.4
 Angle:22.90576965841719
 releaseX:-332
 releaseY:462
-tapTime:5000
+tapTime:2000
 score:45220
 }
