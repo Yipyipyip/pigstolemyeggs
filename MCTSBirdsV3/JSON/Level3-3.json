@@ -724,6 +724,18 @@
       "id": "ICE_BLOCK_2X2",
       "x": 97.008,
       "y": -30.901
-    }
-  }
+    },
+    "slingshot": {
+      "angle": 0,
+      "id": "SLINGSHOT",
+      "x": 0.0,
+      "y": 0.0
+},
+    "slingshot": {
+      "angle": 0,
+      "id": "SLINGSHOT",
+      "x": 24.55815,
+      "y": -47.494556
+}
+}
 }

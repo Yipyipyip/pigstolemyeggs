@@ -280,6 +280,12 @@
       "id": "PIG_BASIC_SMALL",
       "x": 95.164,
       "y": -4.465
-    }
-  }
+    },
+    "slingshot": {
+      "angle": 0,
+      "id": "SLINGSHOT",
+      "x": 10.236884,
+      "y": 16.5417
+}
+}
 }

@@ -304,6 +304,12 @@
       "id": "TERRAIN_TEXTURED_HILLS_5X2",
       "x": 63.044,
       "y": -11.378
-    }
-  }
+    },
+    "slingshot": {
+      "angle": 0,
+      "id": "SLINGSHOT",
+      "x": 10.416193,
+      "y": -7.4632835
+}
+}
 }

@@ -562,6 +562,12 @@
       "id": "MISC_EXPLOSIVE_TNT",
       "x": 60.216,
       "y": -5.788
-    }
-  }
+    },
+    "slingshot": {
+      "angle": 0,
+      "id": "SLINGSHOT",
+      "x": 11.67549,
+      "y": 19.341127
+}
+}
 }

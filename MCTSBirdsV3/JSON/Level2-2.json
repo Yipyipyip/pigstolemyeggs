@@ -424,6 +424,12 @@
       "id": "MISC_RUBBER_DUCK",
       "x": 60.644,
       "y": -14.527
-    }
-  }
+    },
+    "slingshot": {
+      "angle": 0,
+      "id": "SLINGSHOT",
+      "x": -0.49359325,
+      "y": 23.26222
+}
+}
 }
