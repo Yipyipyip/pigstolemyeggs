@@ -15,7 +15,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Map;
-
+/**
+ * Plays the Angry Birds Game.
+ */
 public class Game {
     ABContactListener contactListener;
     private int birdsNumber = 0;
@@ -24,7 +26,8 @@ public class Game {
     private JsonObject materials;
     private JsonObject level;
     private float mod = (float) 20;
-    private ArrayList<Body> birds, bodiesToDelete, bodiesToExplode;
+    private ArrayList<Body> birds, bodiesToDelete, bodiesToExplode, bodiesToSpeedUp;
+    private ArrayList<Float> speedUp;
     private int chunks = 5;
     private JsonElement materialsElement = null;
     private JsonElement obejctsElement = null;
@@ -41,12 +44,16 @@ public class Game {
         levelNumber = level;
         initWorld();
     }
-
+/**
+ * Initializes Level from the JSON Files.
+ */
     public void initWorld() {
         world = new World(new Vec2(0, -9.8f));
         birds = new ArrayList<Body>();
         bodiesToDelete = new ArrayList<Body>();
         bodiesToExplode = new ArrayList<Body>();
+        bodiesToSpeedUp = new ArrayList<Body>();
+        speedUp = new ArrayList<Float>();
         JsonParser parser = new JsonParser();
 
         try {
@@ -77,7 +84,7 @@ public class Game {
         }
         level = levelElement.getAsJsonObject();
         JsonObject JSONWorld = level.get("world").getAsJsonObject();
-        contactListener = new ABContactListener(bodiesToDelete, bodiesToExplode);
+        contactListener = new ABContactListener(bodiesToDelete, bodiesToExplode, bodiesToSpeedUp, speedUp);
         world.setContactListener(contactListener);
         for (Map.Entry<String, JsonElement> entry : JSONWorld.entrySet()) {
             String key = entry.getKey();
@@ -86,6 +93,9 @@ public class Game {
             JsonObject value = entry.getValue().getAsJsonObject();
             // read level
             String id = value.get("id").getAsString();
+            if (id == null || id.equals("")) {
+                continue;
+            }
             float angle = value.get("angle").getAsFloat();
             float x = value.get("x").getAsFloat();
             float y = value.get("y").getAsFloat();
@@ -108,6 +118,82 @@ public class Game {
             meta.setMaterial(material);
             meta.setStrength(materialObject.get("strength").getAsFloat());
             meta.setDefense(materialObject.get("defense").getAsFloat());
+            if (materialObject.get("damageMultipliers") != null) {
+                JsonObject damageMultipliers = materialObject.get("damageMultipliers").getAsJsonObject();
+                if (damageMultipliers != null) {
+                    JsonElement ice = damageMultipliers.get("BLOCK_ICE");
+                    if (ice!=null) {
+                        meta.setdamageMultiplierIce(damageMultipliers.get("BLOCK_ICE").getAsFloat());
+                    }
+                    JsonElement wood = damageMultipliers.get("BLOCK_WOOD");
+                    if (wood!=null) {
+                        meta.setdamageMultiplierIce(damageMultipliers.get("BLOCK_WOOD").getAsFloat());
+                    }
+                    JsonElement snow = damageMultipliers.get("BLOCK_SNOW");
+                    if (snow!=null) {
+                        meta.setdamageMultiplierIce(damageMultipliers.get("BLOCK_SNOW").getAsFloat());
+                    }
+                    JsonElement stone = damageMultipliers.get("BLOCK_STONE");
+                    if (stone!=null) {
+                        meta.setdamageMultiplierIce(damageMultipliers.get("BLOCK_STONE").getAsFloat());
+                    }
+                    JsonElement snow_static = damageMultipliers.get("BLOCK_SNOW_STATIC");
+                    if (snow_static!=null) {
+                        meta.setdamageMultiplierIce(damageMultipliers.get("BLOCK_SNOW_STATIC").getAsFloat());
+                    }
+                }
+            }
+       	 
+       	 if (materialObject.get("velocityMultipliers") != null) {
+                JsonObject velocityMultipliers = materialObject.get("velocityMultipliers").getAsJsonObject();
+                if (velocityMultipliers != null) {
+                    JsonElement ice = velocityMultipliers.get("BLOCK_ICE");
+                    if (ice!=null) {
+                        meta.setvelocityMultiplierIce(velocityMultipliers.get("BLOCK_ICE").getAsFloat());
+                    }
+                    JsonElement wood = velocityMultipliers.get("BLOCK_WOOD");
+                    if (wood!=null) {
+                        meta.setvelocityMultiplierIce(velocityMultipliers.get("BLOCK_WOOD").getAsFloat());
+                    }
+                    JsonElement snow = velocityMultipliers.get("BLOCK_SNOW");
+                    if (snow!=null) {
+                        meta.setvelocityMultiplierIce(velocityMultipliers.get("BLOCK_SNOW").getAsFloat());
+                    }
+                    JsonElement stone = velocityMultipliers.get("BLOCK_STONE");
+                    if (stone!=null) {
+                        meta.setvelocityMultiplierIce(velocityMultipliers.get("BLOCK_STONE").getAsFloat());
+                    }
+                    JsonElement snow_static = velocityMultipliers.get("BLOCK_SNOW_STATIC");
+                    if (snow_static!=null) {
+                        meta.setvelocityMultiplierIce(velocityMultipliers.get("BLOCK_SNOW_STATIC").getAsFloat());
+                    }
+                    JsonElement pig_helmet = velocityMultipliers.get("PIG_HELMET");
+                    if (pig_helmet!=null) {
+                        meta.setvelocityMultiplierIce(velocityMultipliers.get("PIG_HELMET").getAsFloat());
+                    }
+                    JsonElement pig_basic_small = velocityMultipliers.get("PIG_BASIC_SMALL");
+                    if (pig_basic_small!=null) {
+                        meta.setvelocityMultiplierIce(velocityMultipliers.get("PIG_BASIC_SMALL").getAsFloat());
+                    }
+                    JsonElement pig_basic_medium = velocityMultipliers.get("PIG_BASIC_MEDIUM");
+                    if (pig_basic_medium!=null) {
+                        meta.setvelocityMultiplierIce(velocityMultipliers.get("PIG_BASIC_MEDIUM").getAsFloat());
+                    }
+                    JsonElement pig_basic_big = velocityMultipliers.get("PIG_BASIC_BIG");
+                    if (pig_basic_big!=null) {
+                        meta.setvelocityMultiplierIce(velocityMultipliers.get("PIG_BASIC_BIG").getAsFloat());
+                    }
+                    JsonElement pig_king = velocityMultipliers.get("PIG_KING");
+                    if (pig_king!=null) {
+                        meta.setvelocityMultiplierIce(velocityMultipliers.get("PIG_KING").getAsFloat());
+                    }
+                    JsonElement pig_mustache = velocityMultipliers.get("PIG_MUSTACHE");
+                    if (pig_mustache!=null) {
+                        meta.setvelocityMultiplierIce(velocityMultipliers.get("PIG_MUSTACHE").getAsFloat());
+                    }
+                }
+                
+            }
             // read shape
             JsonObject shapeObject = shapes.getAsJsonObject(shape);
             String type = shapeObject.get("type").getAsString();
@@ -177,7 +263,12 @@ public class Game {
         UpdateThread updateThread = new UpdateThread(this, bodiesToDelete, bodiesToExplode);
         updateThread.start();
     }
-
+    /**
+     * Shoots the given bird at the given angle. If the bird has a special ability it will be activated at the given tap time.
+     * @param theta
+     * @param bird
+     * @param taptime
+     */
     public void shoot(double theta, Body bird, float taptime) {
         System.out.println("Shoot at "+theta+" degrees, taptime: "+taptime);
         contactListener.setBirdShot(true);
@@ -219,7 +310,12 @@ public class Game {
         }
         //System.err.println(bird.getLinearVelocity());
     }
-
+    /**
+     * The given body explodes. 
+     * To do this, it initializes chunks objects at the position of the given object and
+     * shoots them in 360/chunks angle to hit objects around the given object.
+     * @param exploding
+     */
     public void explode(Body exploding) {
         for (int i = 0; i < chunks; i++) {
             float angle = (float) ((i / (float) chunks) * 360 * Math.PI / 180);
@@ -254,30 +350,48 @@ public class Game {
         }
         bodiesToDelete.add(exploding);
     }
-
+    /**
+     * initializes a egg for the white bird. and shoots the given object again in a 30 degree angle.
+     * @param whiteBird
+     */
     void whiteBird(Body whiteBird) {
         whiteBirdEgg(whiteBird);
         shoot(30, whiteBird, 0);
     }
-
+/**
+ * Splits up given bird, and shoots them at -20 and +20 degress of the given bird.
+ * @param blueBird
+ */
     void blueBird(Body blueBird) {
         blueBirdSplit(blueBird, (20));
         blueBirdSplit(blueBird, (-20));
     }
-
+/**
+ * Speeds up the given bird.
+ * @param yellowBird
+ */
     void yellowBird(Body yellowBird) {
         float impulse = (float) 37.5 * yellowBird.getMass();
         Double theta = Math.atan((yellowBird.getLinearVelocity().y - yellowBird.getPosition().y) / (yellowBird.getLinearVelocity().x - yellowBird.getPosition().x));
         theta = theta * Math.PI / 180.;
         yellowBird.applyLinearImpulse(new Vec2((float) Math.cos(theta) * impulse, (float) Math.sin(theta) * impulse), yellowBird.getPosition());
     }
-
+    /**
+     * 
+     * @return The score of the level, by adding the remaining points to the given points which there achieved by destroying objects.
+     *
+     */
     public int getEndScore() {
         int r = contactListener.getPoints();
         r += (10000 * birdsNumber);
         return r;
     }
-
+    /**
+     * Duplicates the given bird and shoots it at the given angle.
+     * @param dub
+     * @param angle
+     * @return
+     */
     public Body blueBirdSplit(Body dub, double angle) {
 
         FixtureDef fd = new FixtureDef();
@@ -307,7 +421,11 @@ public class Game {
         r.setLinearVelocity(new Vec2(x, y));
         return r;
     }
-
+/**
+ * Creates the egg of the white bird.
+ * @param dub
+ * @return
+ */
     public Body whiteBirdEgg(Body dub) {
 
         FixtureDef fd = new FixtureDef();
@@ -341,7 +459,10 @@ public class Game {
     public Body getActiveBird() {
         return activeBird;
     }
-
+/**
+ * Sets the given Bird as active. It also changes the position of the activeBird.
+ * @param activeBird
+ */
     public void setActiveBird(Body activeBird) {
         this.activeBird = activeBird;
         activeBird.setType(BodyType.STATIC);
@@ -349,7 +470,10 @@ public class Game {
         activeBird.synchronizeTransform();
         activeBird.setType(BodyType.DYNAMIC);
     }
-
+/**
+ * Determines if the game is won.
+ * @return
+ */
     public boolean isWon() {
         Body bodylist = world.getBodyList();
         for (int i = 0; i < world.getBodyCount(); ++i) {
@@ -360,8 +484,20 @@ public class Game {
         }
         return true;
     }
-
+    /**
+     * Determines if the game is lost.
+     * @return
+     */
     public boolean isLost() {
         return birds.size() == 1 && !isWon();
+    }
+
+    /**
+     * Speeds up the given bird.
+     */
+    void speedUpBird(Body bird,float impulse) {
+        Double theta = Math.atan((bird.getLinearVelocity().y - bird.getPosition().y) / (bird.getLinearVelocity().x - bird.getPosition().x));
+        theta = theta * Math.PI / 180.;
+        bird.applyLinearImpulse(new Vec2((float) Math.cos(theta) * impulse, (float) Math.sin(theta) * impulse), bird.getPosition());
     }
 }

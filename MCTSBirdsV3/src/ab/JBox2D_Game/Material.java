@@ -13,7 +13,6 @@ private float density;
 private float friction;
 private float restitution;
 private float strength;
-private ArrayList<VelocityDamageMultipliers> multipliers =new ArrayList<VelocityDamageMultipliers>();
 public Material(String name, BodyType bodyType, float defense, float density, float friction, float restitution, float strength)
 {
 	this.setName(name);
@@ -59,12 +58,6 @@ public float getStrength() {
 }
 public void setStrength(float strength) {
 	this.strength = strength;
-}
-public VelocityDamageMultipliers getMultipliers(int i) {
-	return multipliers.get(i);
-}
-public void addMultiplier(VelocityDamageMultipliers multiplier) {
-	this.multipliers.add(multiplier);
 }
 public String getName() {
 	return name;
