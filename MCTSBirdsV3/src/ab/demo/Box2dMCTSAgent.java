@@ -30,6 +30,7 @@ public class Box2dMCTSAgent implements Runnable {
     public static int time_limit = 12;
     private Map<Integer, Integer> scores = new LinkedHashMap<Integer, Integer>();
     private Game game;
+    private int stage = 1;
 
     //Begin  extra code for MCTS
 
@@ -180,7 +181,7 @@ public class Box2dMCTSAgent implements Runnable {
         ReadShot();
         Storage.clear();
         // create a box2d representation of the game
-        game = new Game(1, currentLevel);
+        game = new Game(stage, currentLevel);
         // Main loop
         while (true) {
             GameState state = solve();
@@ -240,7 +241,7 @@ public class Box2dMCTSAgent implements Runnable {
                 }
                 System.out.println("Total Score: " + totalScore);
                 // create a new game
-                game = new Game(1, currentLevel);
+                game = new Game(stage, currentLevel);
             } else if (state == GameState.LOST) {
                 System.out.println("Restart");
                 //Back propagation
@@ -272,7 +273,7 @@ public class Box2dMCTSAgent implements Runnable {
                 shotFired = 0;
                 Simulations++;
                 // create new game
-                game = new Game(1, currentLevel);
+                game = new Game(stage, currentLevel);
             }
 
         }
