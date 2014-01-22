@@ -474,6 +474,15 @@ public class TrajectoryPlanner {
 		return getTimeByDistance(sling, release, tapPoint);
 		
 	}
+
+
+    // derives trajectory function to get the gradient at any point
+    public double getGradient(Rectangle sling, Point releasePoint, int x) {
+        setTrajectory(sling, releasePoint);
+        x -= _ref.x;
+        // derivation of parabola
+        return (x/(Math.cos(_theta)*Math.cos(_theta)))/(_scale*getVelocity(_theta)*getVelocity(_theta))-Math.tan(_theta);
+    }
     
   
 }

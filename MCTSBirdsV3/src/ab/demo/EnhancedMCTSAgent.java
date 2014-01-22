@@ -305,7 +305,7 @@ public class EnhancedMCTSAgent implements Runnable {
                     System.out.println("Updating Back progagation");
                     System.out.println(shot.Theta);
                     int angle = (int) (shot.Theta * 100);
-                    int tap = (int) (shot.tapTime / 100);
+                    int tap = (shot.tapTime / 100);
                     Visited[curLoc][angle][tap]++;
                     System.out.println(angle);
                     //Discourage nearby shots because the last shot here was bad
@@ -434,7 +434,93 @@ public class EnhancedMCTSAgent implements Runnable {
                     for (LaunchData data : possibleLaunchPoints) {
                         for (int i = 0; i < BackProp.length; ++i) {
                             for (int taptime = 0; taptime < BackProp[i][data.getAngle()].length; ++taptime) {
-                                BackProp[i][data.getAngle()][taptime] = 5; // TODO ask Martin: good value? right array?
+                                BackProp[i][data.getAngle()][taptime] += 8;
+                            }
+                        }
+                    }
+                    List<ABObject> woods = vision.findWood();
+                    List<ABObject> ices = vision.findIce();
+                    List<ABObject> stones = vision.findStone();
+
+                    ArrayList<Shot> shots = new ArrayList<Shot>();
+                    //Rectangle pig = pigs.get(index);
+                    ABType birdInSling = aRobot.getBirdTypeOnSling();
+                    if (birdInSling == ABType.YellowBird && woods.size() > 0) {
+                        // random pick up a wooden block
+                        Random r = new Random();
+                        int index = r.nextInt(woods.size());
+                        ABObject wood = woods.get(index);
+                        Point _tpt = new Point((int) (wood.getCenterX() * 0.92),
+                                (int) wood.getCenterY()); // shoot shorter for tapping
+                        for (Point point : tp.estimateLaunchPoint(sling, _tpt)) {
+                            int xStep = 2;
+                            int tap_time = 0;
+                            for (int x = (int) vision.findSlingshotMBR().getCenterX(); x < _tpt.x; x += xStep) {
+                                int y = tp.getYCoordinate(sling, point, x);
+                                System.out.println("y: " + y);
+                                // derivation of the trajectory function
+                                double gradient = tp.getGradient(sling, point, x);
+                                System.out.println("Gradient: " + gradient);
+                                // calculate resulting y is you tap now
+                                int dist = _tpt.x - x;
+                                int decline = (dist * dist) / 10000;
+                                double calcY = y + dist * gradient + decline;
+                                // set tap time if calculated y is lower than the target's y
+                                if (calcY > _tpt.y) {
+                                    tap_time = (tap_time + tp.getTapTime(sling, point, new Point(x, y), 5000)) / 2;
+                                    break;
+                                } else {
+                                    tap_time = tp.getTapTime(sling, point, new Point(x, y), 5000);
+                                }
+                            }
+                            int angle = (int) tp.getReleaseAngle(sling, point);
+                            for (int i = 0; i < BackProp.length; ++i) {
+                                BackProp[i][angle][tap_time] += 5;
+                            }
+                        }
+
+                    } else if (birdInSling == ABType.BlueBird && ices.size() > 0) {
+                        // random pick up an ice block
+                        Random r = new Random();
+                        int index = r.nextInt(ices.size());
+                        ABObject ice = ices.get(index);
+                        Point _tpt = new Point((int) ice.getCenterX(),
+                                (int) ice.getCenterY());
+                        for (Point point : tp.estimateLaunchPoint(sling, _tpt)) {
+                            int angle = (int) tp.getReleaseAngle(sling, point);
+                            for (int i = 0; i < BackProp.length; ++i) {
+                                for (int taptime = 0; taptime < BackProp[i][angle].length; ++taptime) {
+                                    BackProp[i][angle][taptime] += 3;
+                                }
+                            }
+                        }
+                    } else if (birdInSling == ABType.BlackBird && stones.size() > 0) {
+                        // random pick up an stone block
+                        Random r = new Random();
+                        int index = r.nextInt(stones.size());
+                        ABObject stone = stones.get(index);
+                        Point _tpt = new Point((int) stone.getCenterX(),
+                                (int) stone.getCenterY());
+                        for (Point point : tp.estimateLaunchPoint(sling, _tpt)) {
+                            int angle = (int) tp.getReleaseAngle(sling, point);
+                            for (int i = 0; i < BackProp.length; ++i) {
+                                for (int taptime = 0; taptime < BackProp[i][angle].length; ++taptime) {
+                                    BackProp[i][angle][taptime] += 3;
+                                }
+                            }
+                        }
+                    } else {
+                        Random r = new Random();
+                        int index = r.nextInt(ices.size());
+                        ABObject pig = pigs.get(index);
+                        Point _tpt = new Point((int) pig.getCenterX(),
+                                (int) pig.getCenterY());
+                        for (Point point : tp.estimateLaunchPoint(sling, _tpt)) {
+                            int angle = (int) tp.getReleaseAngle(sling, point);
+                            for (int i = 0; i < BackProp.length; ++i) {
+                                for (int taptime = 0; taptime < BackProp[i][angle].length; ++taptime) {
+                                    BackProp[i][angle][taptime] += 3;
+                                }
                             }
                         }
                     }
