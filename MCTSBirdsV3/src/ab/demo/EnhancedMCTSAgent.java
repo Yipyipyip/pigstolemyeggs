@@ -24,6 +24,10 @@ import java.io.*;
 import java.util.*;
 import java.util.List;
 
+/**
+ * Enhanced implementation of the MCTS agent.
+ * This Agent adds different strategies for the birds to MCTS to increase the probability for good shots to be selected, which speeds up MCTS.
+ */
 public class EnhancedMCTSAgent implements Runnable {
 
     private ActionRobot aRobot;
@@ -33,8 +37,10 @@ public class EnhancedMCTSAgent implements Runnable {
     private Map<Integer, Integer> scores = new LinkedHashMap<Integer, Integer>();
     TrajectoryPlanner tp;
     private boolean firstShot;
-    private Point prevTarget;
 
+    /**
+     * Struct class, which holds data about shots.
+     */
     public class LaunchData {
         private int score;
         private Point releasePoint;
@@ -75,7 +81,6 @@ public class EnhancedMCTSAgent implements Runnable {
 
         aRobot = new ActionRobot();
         tp = new TrajectoryPlanner();
-        prevTarget = null;
         firstShot = true;
         randomGenerator = new Random();
         // --- go to the Poached Eggs episode level selection page ---
@@ -141,7 +146,6 @@ public class EnhancedMCTSAgent implements Runnable {
         try {
             i = new DataInputStream(new FileInputStream(fileLocation));
         } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         BufferedReader b = new BufferedReader(new InputStreamReader(i));
@@ -155,15 +159,10 @@ public class EnhancedMCTSAgent implements Runnable {
                 }
             }
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        //System.out.println("bestScore");
-        //System.out.println(BestScore);
     }
 
-
-    //
     static int Simulations = 0; //total simulations already played
 
     //Back propagation variables. Used in the selection of MCTS
@@ -177,23 +176,25 @@ public class EnhancedMCTSAgent implements Runnable {
     static int cAngle; //choice of angle
     static int cTap;  //choice of tap time
 
+    /**
+     * Select next shot for execution
+     *
+     * @param curBird Current bird
+     */
     public void Selection(int curBird) {
 
         Random rAngle = new Random();
         cAngle = rAngle.nextInt(139); //if all values are below threshold, pick a random shot
         cTap = rAngle.nextInt(31); //if all values are below threshold, pick a random shot
         if (Birds.size() > curBird && Birds.get(curBird) == ABType.RedBird) {
-            cTap = 0;
+            cTap = 0; // taptime for red bird
         }
         if (Simulations < 0) { //Optional: Do random shots for the first x plays to gather data for the MCTS
             return;
         }
-
-
-        //System.out.println(BackProp[0][11][0]);
         System.out.println("Current bird:");
         System.out.println(curBird);
-
+        // Determine best shot to execute
         int maxShot = -1;//If all shots seem bad, choose the random shot selected above until it finds a good solution.
         for (int i = 0; i < 140; i++) {
             for (int j = 0; j < 32; j++) {
@@ -215,10 +216,8 @@ public class EnhancedMCTSAgent implements Runnable {
 
     // run the client
     public void run() {
-
-
         Birds = new ArrayList<ABType>();
-        //Initialize back propagation values
+        // initialize back propagation values
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 140; j++) {
                 for (int k = 0; k < 32; k++) {
@@ -230,13 +229,15 @@ public class EnhancedMCTSAgent implements Runnable {
 
 
         shotFired = 0;
-        currentLevel = 19;//Agent will only play this level
+        currentLevel = 19;//Agent will only play this level; set this variable to choose level for mcts!
         ReadShot();
         Storage.clear();
-
         aRobot.loadLevel(currentLevel);
+
+        // main loop
         while (true) {
             GameState state = solve();
+            // check game state
             if (state == GameState.WON) {
                 try {
                     Thread.sleep(3000);
@@ -262,6 +263,7 @@ public class EnhancedMCTSAgent implements Runnable {
                     System.out.println(angle);
                     for (int a = 0; a < 140; a++) {
                         for (int t = 0; t < 32; t++) {
+                            // increase probability for this shot to be chosen again
                             if (angle == a && tap == t) { //prevent division by 0
                                 BackProp[curLoc][a][t] += (int) ((score / 5000.0));
                             } else {
@@ -269,7 +271,6 @@ public class EnhancedMCTSAgent implements Runnable {
                             }
                         }
                     }
-                    //BackProp[curLoc][ (int)shot.Theta*100 ][ (int) shot.tapTime/100 ]--;
                     curLoc++;
                 }
 
@@ -312,6 +313,7 @@ public class EnhancedMCTSAgent implements Runnable {
                     int NegScore = 10;
                     for (int a = -10; a < 11; a++) {
                         for (int t = -5; t < 6; t++) {
+                            // decrease probability for this shot to be chosen again
                             if (angle + a >= 0 && angle + a < 140 && tap + t >= 0 && tap + t < 32) { //check if out of bounds
                                 if (0 == a && 0 == t) { //check if out of bounds
                                     BackProp[curLoc][angle + a][tap + t] -= (int) (NegScore);
@@ -329,7 +331,10 @@ public class EnhancedMCTSAgent implements Runnable {
                 shotFired = 0;
                 Simulations++;
                 aRobot.restartLevel();
-            } else if (state == GameState.LEVEL_SELECTION) {
+
+            }
+            //Unexcpected Game States
+            else if (state == GameState.LEVEL_SELECTION) {
                 System.out
                         .println("Unexpected level selection page, go to the last current level : "
                                 + currentLevel);
@@ -386,11 +391,9 @@ public class EnhancedMCTSAgent implements Runnable {
                 Shot shot;
                 int dx, dy;
                 {
-                    // Begin Michael
-
                     int step = 1;
 
-                    // find shot which hits the most objects
+                    // find shot which hits the most objects (implementation of the esa agent from the 2013 competition)
                     List<ABObject> allObjects = vision.getAllObjects();
                     ArrayList<LaunchData> possibleLaunchPoints = new ArrayList<LaunchData>();
                     // iterate through all hittable objects
@@ -431,6 +434,7 @@ public class EnhancedMCTSAgent implements Runnable {
                             }
                         }
                     }
+                    // increase the probability for the found shots to be selected
                     for (LaunchData data : possibleLaunchPoints) {
                         for (int i = 0; i < BackProp.length; ++i) {
                             for (int taptime = 0; taptime < BackProp[i][data.getAngle()].length; ++taptime) {
@@ -438,20 +442,20 @@ public class EnhancedMCTSAgent implements Runnable {
                             }
                         }
                     }
+
+                    // strategies for different birds
                     List<ABObject> woods = vision.findWood();
                     List<ABObject> ices = vision.findIce();
                     List<ABObject> stones = vision.findStone();
-
-                    ArrayList<Shot> shots = new ArrayList<Shot>();
-                    //Rectangle pig = pigs.get(index);
                     ABType birdInSling = aRobot.getBirdTypeOnSling();
+                    Point _tpt = pigs.get(0).getCenter();
+                    // yellow bird
                     if (birdInSling == ABType.YellowBird && woods.size() > 0) {
                         // random pick up a wooden block
                         Random r = new Random();
                         int index = r.nextInt(woods.size());
                         ABObject wood = woods.get(index);
-                        Point _tpt = new Point((int) (wood.getCenterX() * 0.92),
-                                (int) wood.getCenterY()); // shoot shorter for tapping
+                        _tpt = new Point((int) (wood.getCenterX() * 0.92), (int) wood.getCenterY()); // shoot a little shorter (for tapping)
                         for (Point point : tp.estimateLaunchPoint(sling, _tpt)) {
                             int xStep = 2;
                             int tap_time = 0;
@@ -474,89 +478,90 @@ public class EnhancedMCTSAgent implements Runnable {
                                 }
                             }
                             int angle = (int) tp.getReleaseAngle(sling, point);
+                            // propagate back for all depths
                             for (int i = 0; i < BackProp.length; ++i) {
                                 BackProp[i][angle][tap_time] += 5;
                             }
                         }
 
-                    } else if (birdInSling == ABType.BlueBird && ices.size() > 0) {
+                    }
+                    // blue bird
+                    else if (birdInSling == ABType.BlueBird && ices.size() > 0) {
                         // random pick up an ice block
                         Random r = new Random();
                         int index = r.nextInt(ices.size());
                         ABObject ice = ices.get(index);
-                        Point _tpt = new Point((int) ice.getCenterX(),
+                        _tpt = new Point((int) ice.getCenterX(),
                                 (int) ice.getCenterY());
+                        // iterate through the 2 possible launch points
                         for (Point point : tp.estimateLaunchPoint(sling, _tpt)) {
                             int angle = (int) tp.getReleaseAngle(sling, point);
                             for (int i = 0; i < BackProp.length; ++i) {
+                                // propagate back for all depths
                                 for (int taptime = 0; taptime < BackProp[i][angle].length; ++taptime) {
                                     BackProp[i][angle][taptime] += 3;
                                 }
                             }
                         }
-                    } else if (birdInSling == ABType.BlackBird && stones.size() > 0) {
+                    }
+                    // black bird
+                    else if (birdInSling == ABType.BlackBird && stones.size() > 0) {
                         // random pick up an stone block
                         Random r = new Random();
                         int index = r.nextInt(stones.size());
                         ABObject stone = stones.get(index);
-                        Point _tpt = new Point((int) stone.getCenterX(),
+                        _tpt = new Point((int) stone.getCenterX(),
                                 (int) stone.getCenterY());
+                        // iterate through the 2 possible launch points
                         for (Point point : tp.estimateLaunchPoint(sling, _tpt)) {
                             int angle = (int) tp.getReleaseAngle(sling, point);
+                            // propagate back for all depths
                             for (int i = 0; i < BackProp.length; ++i) {
-                                for (int taptime = 0; taptime < BackProp[i][angle].length; ++taptime) {
-                                    BackProp[i][angle][taptime] += 3;
-                                }
+                                // always tap after the bird has already hit -> no tapping effect (assuming air time < 5s)
+                                BackProp[i][angle][5000] += 3;
                             }
                         }
-                    } else {
+                    }
+                    // white bird
+                    else if (birdInSling == ABType.WhiteBird) {
+                        // randomly choose a pig to shoot at
                         Random r = new Random();
                         int index = r.nextInt(ices.size());
                         ABObject pig = pigs.get(index);
-                        Point _tpt = new Point((int) pig.getCenterX(),
-                                (int) pig.getCenterY());
+                        _tpt = new Point((int) pig.getCenterX(),
+                                (int) pig.getCenterY() - 100);
+                        // iterate through the 2 possible launch points
                         for (Point point : tp.estimateLaunchPoint(sling, _tpt)) {
                             int angle = (int) tp.getReleaseAngle(sling, point);
                             for (int i = 0; i < BackProp.length; ++i) {
+                                // propagate back for all depths
                                 for (int taptime = 0; taptime < BackProp[i][angle].length; ++taptime) {
                                     BackProp[i][angle][taptime] += 3;
                                 }
                             }
                         }
                     }
-
-                    // End Michael
-
-                    // random pick up a pig
-                    ABObject pig = pigs.get(randomGenerator.nextInt(pigs.size()));
-
-                    Point _tpt = pig.getCenter();// if the target is very close to before, randomly choose a
-                    // point near it
-                    prevTarget = new Point(_tpt.x, _tpt.y);
-
-                    // estimate the trajectory
-                    ArrayList<Point> pts = tp.estimateLaunchPoint(sling, _tpt);
-
-                    // do a high shot when entering a level to find an accurate velocity
-                    if (firstShot && pts.size() > 1) {
-                        releasePoint = pts.get(1);
-                    } else if (pts.size() == 1)
-                        releasePoint = pts.get(0);
+                    // red bird
                     else {
-                        // randomly choose between the trajectories, with a 1 in
-                        // 6 chance of choosing the high one
-                        if (randomGenerator.nextInt(6) == 0)
-                            releasePoint = pts.get(1);
-                        else
-                            releasePoint = pts.get(0);
+                        // randomly choose a pig to shoot at
+                        Random r = new Random();
+                        int index = r.nextInt(ices.size());
+                        ABObject pig = pigs.get(index);
+                        _tpt = new Point((int) pig.getCenterX(),
+                                (int) pig.getCenterY());
+                        // iterate through the 2 possible launch points
+                        for (Point point : tp.estimateLaunchPoint(sling, _tpt)) {
+                            int angle = (int) tp.getReleaseAngle(sling, point);
+                            for (int i = 0; i < BackProp.length; ++i) {
+                                for (int taptime = 0; taptime < BackProp[i][angle].length; ++taptime) {
+                                    BackProp[i][angle][taptime] += 3;
+                                }
+                            }
+                        }
                     }
 
                     // Get the reference point
                     Point refPoint = tp.getReferencePoint(sling);
-
-
-                    //static int cAngle; //choice of angle
-                    //static int cTap;  //choice of tap time
 
                     Selection(shotFired);
                     double rAd = cAngle / 100.0;
@@ -571,39 +576,18 @@ public class EnhancedMCTSAgent implements Runnable {
 
                         System.out.println("Release Angle: "
                                 + Math.toDegrees(releaseAngle));
-                        int tapInterval = 0;
                         ABType getBird = aRobot.getBirdTypeOnSling();
-                        switch (getBird) {
 
-                            case RedBird:
-                                tapInterval = 0;
-                                break;               // start of trajectory
-                            case YellowBird:
-                                tapInterval = 65 + randomGenerator.nextInt(25);
-                                break; // 65-90% of the way
-                            case WhiteBird:
-                                tapInterval = 70 + randomGenerator.nextInt(20);
-                                break; // 70-90% of the way
-                            case BlackBird:
-                                tapInterval = 70 + randomGenerator.nextInt(20);
-                                break; // 70-90% of the way
-                            case BlueBird:
-                                tapInterval = 65 + randomGenerator.nextInt(20);
-                                break; // 65-85% of the way
-                            default:
-                                tapInterval = 60;
-                        }
-
-                        //int tapTime = tp.getTapTime(sling, releasePoint, _tpt, tapInterval);
                         int tapTime = cTap * 100;
                         if (getBird == ABType.RedBird) {//Red bird does not need tap time
                             tapTime = 0;
                         }
                         System.out.println(tapTime);
+                        // update storage
                         Storage.add(new ShotData(rAd, Math.toDegrees(releaseAngle), (int) releasePoint.getX(), (int) releasePoint.getY(), tapTime));
-
-
                         shotFired++;
+
+                        // set tap intervals
                         if (Birds.size() < shotFired) {
                             Birds.add(getBird);
                             //Use tap intervals from naive agent as heuristic
@@ -640,14 +624,12 @@ public class EnhancedMCTSAgent implements Runnable {
                             System.out.println(MinTap);
                             System.out.println(MaxTap);
                             //Add heuristic from naive agent to MCTS
-                            if (MinTap != 0 && MaxTap != 0) { //Red bird does ot use tap time
+                            if (MinTap != 0 && MaxTap != 0) { //Red bird does not use tap time
                                 for (int a = 0; a < 140; a++) {
                                     int lowerB = tp.getTapTime(sling, tp.findReleasePoint(sling, a / 100.0), _tpt, MinTap);
                                     int upperB = tp.getTapTime(sling, tp.findReleasePoint(sling, a / 100.0), _tpt, MaxTap);
                                     lowerB = Math.min(lowerB, 3000);
                                     upperB = Math.min(upperB, 3000);
-                                    //System.out.println(  lowerB );
-                                    //System.out.println(  upperB  );
                                     for (int t = 0; t < ((int) (lowerB / 100.0)); t++) {
                                         BackProp[Birds.size() - 1][a][t] -= 10;
                                     }
@@ -660,6 +642,7 @@ public class EnhancedMCTSAgent implements Runnable {
 
                         dx = (int) releasePoint.getX() - refPoint.x;
                         dy = (int) releasePoint.getY() - refPoint.y;
+                        // execute shot
                         shot = new Shot(refPoint.x, refPoint.y, dx, dy, 0, tapTime);
                     } else {
                         System.err.println("No Release Point Found");
@@ -700,7 +683,6 @@ public class EnhancedMCTSAgent implements Runnable {
     }
 
     public static void main(String args[]) {
-
         EnhancedMCTSAgent na = new EnhancedMCTSAgent();
         if (args.length > 0)
             na.currentLevel = Integer.parseInt(args[0]);

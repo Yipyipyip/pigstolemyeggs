@@ -19,60 +19,19 @@ import java.awt.*;
 import java.io.*;
 import java.util.*;
 
+
+/**
+ * Implementation of the MCTS agent using Box2D instead of the game itself.
+ * This agent doesn't need Angry Birds to be running, because the whole game is simulated in Box2D. Therefore, there is also no ActionRobot.
+ */
 public class Box2dMCTSAgent implements Runnable {
 
-    private Random randomGenerator;
     public int currentLevel = 1;
     public static int time_limit = 12;
     private Map<Integer, Integer> scores = new LinkedHashMap<Integer, Integer>();
     private Game game;
 
-    public class LaunchData {
-        private int score;
-        private Point releasePoint;
-        private int angle;
-
-        public LaunchData(int score, Point releasePoint, int theta) {
-            this.score = score;
-            this.releasePoint = releasePoint;
-        }
-
-        public int getAngle() {
-            return angle;
-        }
-
-        public void setAngle(int angle) {
-            this.angle = angle;
-        }
-
-        public void setScore(int score) {
-            this.score = score;
-        }
-
-        public void setReleasePoint(Point releasePoint) {
-            this.releasePoint = releasePoint;
-        }
-
-        public int getScore() {
-            return score;
-        }
-
-        public Point getReleasePoint() {
-            return releasePoint;
-        }
-    }
-
-    // a enhanced implementation of the Naive Agent
-    public Box2dMCTSAgent() {
-
-        randomGenerator = new Random();
-        // --- go to the Poached Eggs episode level selection page ---
-        //ActionRobot.GoFromMainMenuToLevelSelection();
-
-    }
-
     //Begin  extra code for MCTS
-
 
     class ShotData {
         double Theta;
@@ -122,9 +81,7 @@ public class Box2dMCTSAgent implements Runnable {
     }
 
     public void ReadShot() {
-        //System.out.println(  System.getProperty("user.dir") ); //gets your current working directory which should contain the "MCTSresults" folder
         String fileLocation = "./MCTSresults/" + levelD + "-" + Integer.toString(currentLevel) + ".txt";
-        //System.out.println(fileLocation);
         DataInputStream i = null;
         try {
             i = new DataInputStream(new FileInputStream(fileLocation));
@@ -165,23 +122,24 @@ public class Box2dMCTSAgent implements Runnable {
     static int cAngle; //choice of angle
     static int cTap;  //choice of tap time
 
+    /**
+     * Select next shot for execution
+     * @param curBird Current bird
+     */
     public void Selection(int curBird) {
 
         Random rAngle = new Random();
         cAngle = rAngle.nextInt(139); //if all values are below threshold, pick a random shot
         cTap = rAngle.nextInt(31); //if all values are below threshold, pick a random shot
         if (Birds.size() > curBird && ((Metadata) Birds.get(curBird).getUserData()).getMaterial().equals("BIRD_RED")) {
-            cTap = 0;
+            cTap = 0; // taptime for red bird
         }
         if (Simulations < 0) { //Optional: Do random shots for the first x plays to gather data for the MCTS
             return;
         }
-
-
-        //System.out.println(BackProp[0][11][0]);
         System.out.println("Current bird:");
         System.out.println(curBird);
-
+        // Determine best shot to execute
         int maxShot = -1;//If all shots seem bad, choose the random shot selected above until it finds a good solution.
         for (int i = 0; i < 140; i++) {
             for (int j = 0; j < 32; j++) {
@@ -198,7 +156,7 @@ public class Box2dMCTSAgent implements Runnable {
 
     }
 
-    //End extra code for MCTS
+    // End extra code for MCTS
 
 
     // run the client
@@ -218,7 +176,7 @@ public class Box2dMCTSAgent implements Runnable {
 
 
         shotFired = 0;
-        currentLevel = 19;//Agent will only play this level
+        currentLevel = 19; //Agent will only play this level; set this variable to choose level for mcts!
         ReadShot();
         Storage.clear();
         // create a box2d representation of the game
@@ -241,7 +199,7 @@ public class Box2dMCTSAgent implements Runnable {
                     WriteShot(score);
                 }
 
-                //Back propagation
+                //Back propagation of good shot
                 int curLoc = 0;
                 for (ShotData shot : Storage) {
                     System.out.println("Updating Win Back progagation");
@@ -252,6 +210,7 @@ public class Box2dMCTSAgent implements Runnable {
                     System.out.println(angle);
                     for (int a = 0; a < 140; a++) {
                         for (int t = 0; t < 32; t++) {
+                            // increase probability for this shot to be chosen again
                             if (angle == a && tap == t) { //prevent division by 0
                                 BackProp[curLoc][a][t] += (int) ((score / 5000.0));
                             } else {
@@ -265,6 +224,7 @@ public class Box2dMCTSAgent implements Runnable {
                 Storage.clear();
                 shotFired = 0;
                 Simulations++;
+                // save score
                 if (!scores.containsKey(currentLevel))
                     scores.put(currentLevel, score);
                 else {
@@ -292,21 +252,20 @@ public class Box2dMCTSAgent implements Runnable {
                     int tap = (shot.tapTime / 100);
                     Visited[curLoc][angle][tap]++;
                     System.out.println(angle);
-                    //Discourage nearby shots because the last shot here was bad
+                    // Discourage nearby shots because the last shot here was bad
                     int NegScore = 10;
                     for (int a = -10; a < 11; a++) {
                         for (int t = -5; t < 6; t++) {
+                            // decrease probability for this shot to be chosen again
                             if (angle + a >= 0 && angle + a < 140 && tap + t >= 0 && tap + t < 32) { //check if out of bounds
                                 if (0 == a && 0 == t) { //check if out of bounds
                                     BackProp[curLoc][angle + a][tap + t] -= (int) (NegScore);
                                 } else {
                                     BackProp[curLoc][angle + a][tap + t] -= (int) ((1.0 / (Math.abs(a) + Math.abs(t))) * (NegScore));
                                 }
-                                //BackProp[curLoc][ angle + a ][ tap + t ]--;
                             }
                         }
                     }
-                    //BackProp[curLoc][ (int)shot.Theta*100 ][ (int) shot.tapTime/100 ]--;
                     curLoc++;
                 }
                 Storage.clear();
@@ -322,34 +281,28 @@ public class Box2dMCTSAgent implements Runnable {
 
     public GameState solve() {
 
-        GameState state = GameState.PLAYING;
-
-        // if there is a sling, then play, otherwise just skip.
-
-
-        //static int cAngle; //choice of angle
-        //static int cTap;  //choice of tap time
-
+        // select shot
         Selection(shotFired);
         double rAd = cAngle / 100.0;
-        System.out.println(rAd);
 
-        //int tapTime = tp.getTapTime(sling, releasePoint, _tpt, tapInterval);
         int tapTime = cTap * 100;
-        System.out.println(tapTime);
+        System.out.println("rAd: "+rAd+", tap time: "+tapTime);
+        // add shot to storage
         Storage.add(new ShotData(rAd, Math.toDegrees(rAd), 0, 0, tapTime));
         shotFired++;
+        // execute shot in Box2D
         game.shoot(Math.toDegrees(rAd), game.getActiveBird(), tapTime / 1000.f);
+        // check if game is over
         if (game.isWon()) {
-            state = GameState.WON;
+            return GameState.WON;
         } else if (game.isLost()) {
-            state = GameState.LOST;
+            return GameState.LOST;
         }
-        return state;
+        return GameState.PLAYING;
     }
 
     public static void main(String args[]) {
-
+        // No ActionRobot needed here!
         Box2dMCTSAgent na = new Box2dMCTSAgent();
         if (args.length > 0)
             na.currentLevel = Integer.parseInt(args[0]);
