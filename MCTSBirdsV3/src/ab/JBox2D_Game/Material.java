@@ -4,7 +4,9 @@ import java.util.ArrayList;
 
 import org.jbox2d.dynamics.BodyType;
 
-
+/*
+*Initialises the Material for an object. So it can be used as reference point in the programm.
+**/
 public class Material {
 private String name;
 private BodyType bodyType;

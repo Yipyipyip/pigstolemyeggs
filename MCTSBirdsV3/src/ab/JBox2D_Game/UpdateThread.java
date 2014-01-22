@@ -10,6 +10,7 @@ import java.util.ArrayList;
  * Author: Michael Tannenbaum
  * Date: 15.01.14
  * Time: 21:49
+ * Updates the games by deleting bodies which were set to be destroyed and lets defined objects explode.
  */
 public class UpdateThread extends Thread {
 
