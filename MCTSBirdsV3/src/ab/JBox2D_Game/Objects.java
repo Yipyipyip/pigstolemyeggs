@@ -4,7 +4,9 @@ import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.collision.shapes.Shape;
 import org.jbox2d.dynamics.BodyType;
 
-
+/*
+*Is used as a reference point for objects in Box2D.
+**/
 public class Objects {
     private String name;
     private String type;
