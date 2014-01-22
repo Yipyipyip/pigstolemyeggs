@@ -1,5 +1,8 @@
 package ab.JBox2D_Game;
-
+/*
+*Sets the VelocityDamageMultiplier. By using the object "type" as a reference point.
+*If boolean damage is true it is a damage multiplier, if false a velocity multiplier.
+**/
 public class VelocityDamageMultipliers {
 private Material type;
 private float multiplier;
